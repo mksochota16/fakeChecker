@@ -1,0 +1,31 @@
+reviewer_reviews_content; MyEned
+reviewer_review_id_child; jJc9Ad
+reviewer_review_relative_date; rsqaWe
+reviewer_name; geAzIe F8kQwb
+reviewer_guide_level; FNyx3 F8kQwb
+reviewer_number_of_reviews; Qha3nb
+reviewer_review_location; GHT2ce NsCY4
+reviewer_review_label; d4r55 YJxk2d
+trans_more_info_button; lzIite PpaGLb
+place_header; DUwDvf fontHeadlineLarge
+place_number_of_reviews; fontBodyMedium dmRWX
+place_description; ['skqShb', 'fontBodyMedium', 'fontBodyMedium']
+place_address; CsEnBe
+place_reviewer_content; ['MyEned', 'wiI7pd']
+place_reviewer_contents; MyEned
+place_reviewer_date; DU9Pgb
+all_reviewer_stars; kvMYJc
+place_reviewer_response_content; ['jJc9Ad', 'GHT2ce', 'wiI7pd']
+place_reviewer_review_id; GBkF3d
+place_reviewer_name; d4r55
+place_reviewer_local_guide_and_reviews; RfnDt
+place_single_reviewer_section; jftiEf fontBodyMedium
+place_reviewer_url; WEBjve
+place_reviewer_png; NBa7we
+reviewer_private_label; vtSn7b gycdOb
+reviewer_review_photo; Tya61d
+reviewer_review_photo_section; KtCyie
+search_result_marker_0; Nv2PK tH5CWc THOPZb
+search_result_marker_1; Nv2PK THOPZb CpccDe
+place_reviewer_photo; Tya61d
+place_reviewer_photo_section; KtCyie

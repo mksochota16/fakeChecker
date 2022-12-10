@@ -1,0 +1,967 @@
+=============== TRANSPORT ==================
+Punkt obsługi podróżnych przy drodze płatnej
+Stacja kolejowa
+Stacja
+Stacja paliw
+Stacja metra
+Firma importowo-eksportowa
+Baza transportowa
+Firma kolejowa
+Transport
+Usługa transportowa
+Agencja wynajmu samochodów ciężarowych
+Regionalny port lotniczy
+Limuzyny
+Taksówki
+Informacja
+Przewozy autobusowe
+Stacja kolejowa
+Przystanek tramwajowy
+Przystanek autobusowy
+Międzynarodowy port lotniczy
+Dworzec autobusowy
+Zajazd dla ciężarówek
+Punkt obsługi podróżnych
+Punkt obsługi podróżnych przy drodze płatne
+Firma transportowa
+Budowa dróg
+Bezpłatny parking
+Punkt poboru opłat
+=============== DOSTAWCY I PRODUCENCI ==================
+Dostawca sprzętu rolniczego
+Dostawca urządzeń chłodniczych
+Dostawca okien
+Producent
+Dostawca farb
+Dostawca drzwi
+Dostawca uzdatniaczy wody
+Dostawca filtrów do uzdatniania wody
+Producent odzieży
+Dostawca systemów ochrony
+Producent oprogramowania
+Producent szkła ozdobnego
+Producent mebli
+Dostawca usług internetowych
+Dostawca tkanin
+Dostawca energii odnawialnej
+Producent blachy
+Dostawca sprzętu do pozyskiwania energii słonecznej
+Producent elektroniki
+Dostawca węgla
+Producent żywności
+Dostawca usług telekomunikacyjnych
+Producent opakowań
+Producent kosmetyków
+Dostawca urządzeń GPS
+Dostawca nasion
+Producent farmaceutyków
+Producent paszy
+Dostawca oświetlenia estradowego
+Dostawca balonów
+Hurtownia
+Hurtownia nabiału
+Hurtownia tkanin
+Hurtownia wyrobów szklanych
+Hurtownia alkoholi
+Hurtownia mebli
+Hurtownia spożywcza
+Hurtownia mięsa
+Mleczarnia
+Piekarnia hurtowa
+Hurtownia artykułów biurowych
+Fabryka czekolady
+Dostawca i producent napojów
+Manufaktura czekolady
+Producent mięsa i wędlin
+Dostawca części elektronicznych
+Dostawca materiałów budowlanych
+Hurtownia sprzętu AGD
+Hurtownia sprzętu elektrycznego
+Skład hurtowy
+Przedsiębiorstwo produkcyjne - tworzywa sztuczne
+Dostawca palet
+Chemical manufacturer
+Dostawca kruszyw
+=============== USŁUGI I PLACÓWKI MEDYCZNE ==================
+Klinika psychiatryczna
+Centrum medyczne
+Laboratorium medyczne
+Centrum krwiodawstwa
+Publiczne centrum medyczne
+Fizjoterapeuta
+Chirurg plastyczny
+Urolog
+Ginekolog-położnik
+Dermatolog
+Optyk
+Lekarz
+Lekarz rodzinny
+Okulista
+Radiolog
+Stomatolog
+Ortopeda
+Masażysta
+Fryzjer
+Ortodonta
+Gastroenterolog
+Weterynarz
+Dietetyk
+Neurolog
+Psychiatra
+Psycholog
+Internista
+Pediatra
+Gabinet medycyny alternatywnej
+Apteka
+Specjalista rehabilitacji
+Lekarz medycyny pracy
+Szpital
+Szpital prywatny
+Szpital dziecięcy
+Sprzęt medyczny
+Stomatolog dziecięcy
+Szpital psychiatryczny
+Artykuły ortopedyczne
+Klinika leczenia bólu
+Przychodnia lekarska
+Klinika fizjoterapii
+Klinika specjalistyczna
+Przychodnia
+Klinika stomatologiczna
+Podiatra
+Szpital ogólny
+Apteka z drogerią
+Ośrodek pomocy doraźnej
+Szpital wojskowy
+Inspekcja sanitarna
+Konsultant ds. zdrowia
+Zdjęcia stomatologiczne
+=============== SERIWSY I NAPRAWY ==================
+Serwis sprzętu AGD
+Warsztat tuningu samochodów
+Serwis samochodów ciężarowych
+Naprawa telefonów
+Serwis motocykli
+Naprawa sprzętu elektronicznego
+Naprawa urządzeń AGD
+Naprawa i serwis komputerów
+Serwis silników Diesla
+Serwis sprzętu fotograficznego
+Naprawa sprzętu RTV
+Naprawa pieców
+Serwis klimatyzacji
+Naprawa telefonów komórkowych
+Serwis komputerów
+Naprawa lamp
+Naprawa sprzętu biurowego
+Serwis komputerowy
+Naprawa rowerów
+=============== MIEJSCA I INSTYTUCJE PUBLICZNE i PAŃSTWOWE ==================
+Organizacja pozarządowa
+Stowarzyszenie inżynierów przemysłowych
+Rynek miejski
+Cmentarz wojskowy
+Fontanna
+Opieka społeczna
+Centrum kultury
+Znana ulica
+Biblioteka
+Biblioteka publiczna
+Spółdzielnia mieszkaniowa
+Partia polityczna
+Bankomat
+Bank
+Poczta
+Wydział komunikacji
+Miejski wydział transportu publicznego
+Ministerstwo Edukacji
+Ogród osiedlowy
+Wypoczynek
+Plac
+Most
+Teren targowy
+Młyn
+Ogród
+Dom seniora
+Park pamięci
+Parking
+Park miejski
+Pomnik wojenny
+Rynek
+Port
+Pomnik
+Parking piętrowy
+Parking publiczny
+Stowarzyszenie mieszkańców
+Ratusz
+Lotnisko
+Plac zabaw
+Dom kultury
+Sąd rejonowy
+Sąd okręgowy
+Komisariat policji
+Sąd miejski
+Urząd pracy
+Policja
+Urząd administracji lokalnej
+Organizacja młodzieżowa
+Obiekt wojskowy
+Urząd miasta
+Urząd
+Urząd skarbowy
+Urząd celny
+Fundacja
+Pałac ślubów
+Urząd gminy
+Starostwo powiatowe
+Agencja celna
+Straż pożarna
+Schronisko dla bezdomnych
+Wybieg dla psów
+Kopalnia
+Elektrownia
+=============== EDUKACJA ==================
+Szkoła języka angielskiego
+Szkoła nauki jazdy
+Szkoła z internatem
+Szkoła prywatna
+Szkoła surfowania
+Szkoła językowa
+Szkoła podstawowa
+Centrum szkoleniowe
+Uczelnia
+Instytucja edukacyjna
+Instruktor żeglarstwa i motorowodniactwa
+Technikum
+Liceum ogólnokształcące
+Przedszkole
+Wydział uniwersytecki
+Szkoła sztuk walki
+Szkoła pływacka
+Szkółka narciarska
+Szkoła tańca
+Centrum edukacji
+Szkoła
+Świetlica dla dzieci
+=============== PRZYRODA ==================
+Przełęcz górska
+Jaskinia
+Wyspa
+Rezerwat przyrody
+Narodowy rezerwat przyrody
+Wodospad
+Krater
+Park zwierząt
+Park
+Staw
+Rzeka
+Park z dziką przyrodą
+Park narodowy
+Ogród botaniczny
+Jezioro
+Jezioro, w którym można pływać
+Szkółka roślin
+Ocean
+Wulkan
+Staw wędkarski
+Reservoir
+Woods
+Mountain range
+Las państwowy
+Szczyt górski
+Obszar obserwacji ptaków
+=============== TURYSTYKA, ROZRYWKA I SPORT ==================
+Biuro organizujące wycieczki krajoznawcze
+Hala widowiskowa
+Sala zabaw
+Rozrywka plażowa
+Kanał
+Latarnia morska
+Dyskoteka
+Jeździectwo
+Siłownia
+Górska kolejka linowa
+Kręgielnia
+Atrakcja turystyczna
+Centrum rekreacyjno-sportowe
+Centrum sportów ekstremalnych
+Centrum wspinaczkowe
+Centrum typu /"escape room/"
+Centrum gry Laser Tag
+Nawiedzony dom
+Boisko do piłki nożnej
+Pole do minigolfa
+Skatepark
+Amfiteatr
+Filharmonia
+Festiwal
+Opera
+Diabelski młyn
+Lodowisko
+Kryty basen
+Boisko lekkoatletyczne
+Basen
+Park rozrywki
+Teatr
+Sala koncertowa
+Kino
+Stabilimento balneare
+Zoo
+Klub golfowy
+Centrum dla odwiedzających
+Zadaszona przestrzeń na plaży
+Klub wędkarski
+Plaża
+Plaża publiczna
+Strzelnica
+Klub taneczny
+Tor wyścigowy
+Klub
+Kompleks sportowy
+Kort tenisowy
+Klub piłkarski
+Klub jazzowy
+Klub muzyczny
+Klub fitness
+Ekskluzywny klub
+Klub sportowy
+Klub tenisowy
+Biuro informacji turystycznej
+Dzienne spa
+Biuro organizujące spływy kajakowe
+Biuro podróży
+Stadion lekkoatletyczny
+Park wodny
+Basen lub kąpielisko
+Stadion
+Kort do squasha
+Organizator turystyki
+Wypożyczalnia nart
+Wypożyczalnia łodzi
+Wypożyczalnia kajaków
+Wypożyczalnia samochodów
+Wynajem samochodu z kierowcą
+Wypożyczalnia rowerów
+Wypożyczalnia namiotów
+Centrum rozrywki
+Kolejka górska
+Stadnina koni
+Ośrodek narciarski
+Publiczne pole golfowe
+Stacja wypożyczalni rowerów
+Wypożyczalnia kamperów
+Spa i centrum odnowy biologicznej
+Klub jachtowy
+Biuro organizujące wycieczki łodzią
+SPA
+Punkt orientacyjny
+Obserwatorium
+Park krajobrazowy
+Taras widokowy
+Punkt widokowy
+Park wakacyjny
+Basen pływacki
+Teren spacerowy
+Stajnia
+Odkryta łaźnia
+Akwarium
+Klub nocny
+Muzeum sztuki
+Muzeum dziedzictwa
+Muzeum
+Muzeum historii
+Muzeum techniki
+Muzeum nauki
+Muzeum figur woskowych
+Muzeum archeologiczne
+Muzeum wojska
+Muzeum kolejnictwa
+Galeria sztuki
+Muzeum Narodowe
+Muzeum morskie
+Muzeum etnograficzne
+Muzeum historii naturalnej
+Muzeum historii lokalnej
+Muzeum zabawek
+Centrum sztuki
+Skansen
+Muzeum dla dzieci
+=============== ZABYTKI I BUDYNKI SAKRALNE ==================
+Meczet
+Kościół ewangelicki
+Świątynia buddyjska
+Świątynia
+Katedra
+Kaplica
+Rzeźba
+Bazylika
+Instytucja religijna
+Miejsce o znaczeniu religijnym
+Kościół prawosławny
+Kościół
+Cmentarz
+Kościół katolicki
+Klasztor
+Kościół Ewangelicko-Augsburski
+Twierdza
+Opuszczona miejscowość
+Ruiny
+Zamek
+Posąg
+Pałac
+Zabytkowy rynek
+Obiekt historyczny
+Miejsce pielgrzymek
+Miejsce historyczne
+Wykopalisko archeologiczne
+=============== SKLEPY ==================
+Sklep z witaminami i suplementami
+Sklep jeździecki
+Sklep dla biegaczy
+Świece i znicze
+Sklep z aparatami słuchowymi
+Sklep z żaluzjami
+Sklep z akcesoriami samochodowymi
+Sklep z meblami kuchennymi
+Sklep z artykułami imprezowymi
+Sklep z zabawkami
+Sklep z odzieżą dziecięcą
+Sklep z telefonami komórkowymi
+Sklep z ogrodzeniami
+Sklep z alarmami
+Sklep z kosiarkami
+Sklep z piwem
+Sklep z koszulkami
+Sklep z kawą
+Sklep z bielizną
+Sklep z serami
+Sklep z artykułami fryzjerskimi
+Sklep z grzejnikami
+Sklep z przyborami kuchennymi
+Sklep z kosmetykami
+Sklep z artykułami biurowymi
+Sklep z odzieżą roboczą
+Sklep z czekoladą
+Sklep z podarunkami
+Sklep z towarami orientalnymi
+Sklep ze słodyczami
+Sklep z suszonymi kwiatami
+Sklep z akumulatorami
+Sklep z pieczątkami
+Sklep z półosiami
+Sklep z odzieżą damską
+Sklep z winem
+Sklep z odzieżą męską
+Sklep z odzieżą używaną
+Sklep z militariami
+Sklep z torebkami
+Sklep z glazurą
+Sklep z walizkami
+Sklep z bronią palną
+Sklep z teleskopami
+Sklep z oświetleniem
+Sklep z materiałami dekarskimi
+Sklep z perukami
+Sklep z akcesoriami do telefonów komórkowych
+Sklep z zegarkami
+Sklep z pączkami
+Sklep z wyrobami skórzanymi
+Sklep z konopiami
+Sklep ze zdrową żywnością
+Sklep z meblami dziecięcymi
+Sklep z blatami
+Sklep z dywanami
+Sklep z pościelą
+Sklep ze stolarką budowlaną
+Sklep z odzieżą sportową
+Sklep z grami
+Sklep ze szkłem i lustrami
+Delikatesy
+Kiosk z prasą
+Sklep z basenami i akcesoriami
+Sklep z e-papierosami i akcesoriami
+Sklep z sejfami i skarbcami
+Sklep z oponami i felgami
+Sklep ogrodniczy
+Sklep spożywczy
+Sklep rowerowy
+Sklep wielobranżowy
+Sklep żelazny
+Sklep firmowy
+Sklep kolekcjonerski
+Sklep sportowy
+Sklep fotograficzny
+Sklep owocowo-warzywny
+Supermarket przemysłowy
+Sklep wędkarski
+Sklep zielarski
+Sklep muzyczny
+Supermarket
+Sklep odzieżowy
+Sklep mięsny
+Sklep obuwniczy
+Sklep artystyczny
+Sklep motocyklowy
+Dyskont
+Dyskont spożywczy
+Sklep AGD
+Sklep papierniczy
+Chiński supermarket
+Sklep
+Sklep RTV
+Sklep wikliniarski
+Sklep rybny
+Sklep turystyczny
+Sklep erotyczny
+Sklep hydrauliczny
+Hipermarket
+Sklep monopolowy
+Sklep hobbystyczny
+Sklep meblowy
+Sklep internetowy
+Sklep narciarski
+Sklep jubilerski
+Sklep narzędziowy
+Sklep zoologiczny
+Sklep z produktami dla zdrowia i urody
+Sklep z odzieżą dla młodzieży
+Sklep - technika grzewcza
+Sklep - systemy audio
+Sklep spożywczy dla smakoszy
+Sklep z produktami dla dzieci
+Sklep z artykułami dla gastronomii
+Sklep z artykułami dla niemowląt
+Meble
+Artykuły metalowe
+Artykuły elektryczne
+Sklep z akcesoriami do ciężarówek
+Salon ślubny
+Butik
+Drogeria
+Kwiaciarnia
+Perfumeria
+Drukarnia
+Księgarnia
+Księgarnia z komiksami
+Pasmanteria
+Sklep Pumpkin Patch
+Salon gier wideo
+Sklep komputerowy
+Elektrownia słoneczna
+Porcelana
+Centrum handlowe
+Centrum outletowe
+Centrum targowo-wystawiennicze
+Sprzedaż internetowa
+Sprzedaż złota
+Sprzedaż odzieży
+Urządzenia i systemy energetyczne
+Sklep dla majsterkowiczów
+Dom towarowy
+Pchli targ
+Dom aukcyjny
+Targowisko
+Akcesoria drukarskie
+Kosmetyki
+Gospodarstwo rolne
+Przetwórstwo i sprzedaż żywności
+Wydawca prasy
+Wydawca
+Opakowania
+=============== GASTRONOMIA ==================
+Bar i grill
+Bar i grill
+Bistro
+Bistro
+Bistro
+Bistro
+Bistro
+Bistro
+Bistro
+Bistro
+Bar serwujący dania z makaronem
+Grill
+Dostarczanie produktów spożywczych
+Kuchnia koreańska
+Kuchnia czeska
+Kuchnia afrykańska
+Kuchnia indyjska
+Kuchnia europejska
+Kuchnia libańska
+Kuchnia amerykańska
+Kuchnia wegańska
+Kuchnia bliskowschodnia
+Kuchnia tajska
+Kuchnia turecka
+Kuchnia japońska
+Kuchnia żydowska
+Kuchnia meksykańska
+Kuchnia gruzińska
+Kuchnia hiszpańska
+Kuchnia armeńska
+Kuchnia chińska
+Kryty plac zabaw
+Kuchnia grecka
+Winnica
+Kuchnia azjatycka
+Kuchnia polska
+Kuchnia wietnamska
+Kuchnia włoska
+Fish and chips takeaway
+Restauracja serwująca falafele
+Mobile caterer
+Pub
+Bar z przekąskami
+Hamburgery
+Bufet ze słodyczami i deserami
+Sushi
+Bar
+Fast food
+Catering
+Ramen
+Bar koktajlowy
+Steki
+Sushi na wynos
+Pizza na wynos
+Bar serwujący tapas
+Fish & chips
+Jedzenie i picie
+BistroBar i grill
+Pizza na telefon
+Gastropub
+Kebab
+Restauracja z daniami na wynos
+Ogródek piwny
+Czekoladziarnia
+Restauracja śniadaniowa
+Restauracja amerykańska (kuchnia tradycyjna)
+Herbaciarnia
+Restauracja włoska (kuchnia Włoch Południowych)
+Restauracja włoska (kuchnia Neapolu)
+Pizzeria
+Ciastkarnia
+Restauracja orientalna
+Lodziarnia
+Kawiarnia
+Restauracja europejska (kuchnia nowoczesna)
+Cukiernia
+Piwiarnia
+Restauracja włoska (kuchnia Włoch Północnych)
+Kafeteria
+Naleśnikarnia
+Knajpa
+Restauracja azjatycka (kuchnia fusion)
+Restauracja rybna
+Owoce morza
+Pub z fajkami wodnymi
+Piekarnia
+Palarnia kawy
+Jadłodajnia
+Winiarnia
+Restauracja
+Pierogarnia
+Restauracja japońska
+Zdrowa żywność
+Strefa gastronomiczna
+Dostawa żywności
+Catering food and drink supplier
+Przetwórstwo owoców i warzyw
+Przetwórstwo rybne
+Restauracja dla rodzin
+Restauracja - amerykańskie naleśniki
+Jedzenie z dostawą do domu
+Browar
+Restauracja z deserami
+Targ spożywczy
+Mrożonki
+Dania z grilla
+=============== MOTORYZACJA ==================
+Dealer samochodów Toyota
+Dealer Renault
+Dealer samochodów Ford
+Dealer Mercedes-Benz
+Dealer samochodów Hyundai
+Dealer samochodów Volkswagen
+Dealer samochodów Volvo
+Dealer Skody
+Dealer Dacii
+Dealer Opla
+Dealer samochodów BMW
+Dealer samochodów Audi
+Dealer samochodów kempingowych
+Inżynier mechanik
+Stacja kontroli pojazdów
+Myjnia samochodowa
+Pomoc drogowa
+Wulkanizacja
+Rynek części samochodowych
+Czyszczenie samochodów
+Przyciemnianie szyb
+Montaż instalacji LPG
+Producent części samochodowych
+Produkcja części samochodowych
+Sprzedawca motocykli
+Czyszczenie tapicerki
+Złomowanie samochodów
+Komis
+Salon samochodowy
+Mechanik samochodowy
+Tapicer samochodowy
+Sklep samochodowy
+Komis samochodowy
+Warsztat samochodowy
+Elektryk samochodowy
+Blacharstwo samochodowe
+Tłumiki
+Szyby samochodowe
+Warsztat produkcyjny
+Sklep z używanymi częściami samochodowymi
+=============== PRAWO I UBEZPIECZENIA ==================
+Konsultant ds. nieruchomości
+Agencja ubezpieczeniowa
+Firma ubezpieczeniowa
+Prawnik - ochrona majątku
+Adwokat sądowy
+Rzecznik patentowy
+Adwokat
+Prawnik
+Pośrednik finansowy
+Pośrednik kredytów hipotecznych
+Notariusz
+Pośrednik w obrocie nieruchomościami
+Doradca finansowy
+Kancelaria
+Prawnik - ubezpieczenia
+Prawnik - obrażenia osób
+Prawnik - prawo administracyjne
+Rzeczoznawca
+Doradca podatkowy
+Biuro podatkowe
+Biuro rachunkowe
+=============== BUDOWNICTWO ==================
+Obróbka metali
+Obróbka metali
+Montaż okien
+Obróbka metali
+Usługi remontowo-budowlane
+Usługi gazownicze
+Usługi ciepłownicze
+Kamieniarz
+Firma budowlana
+Agencja nieruchomości
+Skład materiałów budowlanych
+Wypożyczalnia narzędzi budowlanych
+Zakładanie instalacji elektrycznych
+Wyposażenie łazienek
+Remonty
+Wykonawca instalacji grzewczych, klimatyzacyjnych i wentylacyjnych
+Zasłony, firanki, karnisze
+Dodatki do mebli
+Przeprowadzki i usługi magazynowe
+Usługi w zakresie systemów szamb
+Rzeźbienie w kamieniu
+Budowa domów na zamówienie
+Instalacja klimatyzacji
+Materiały drewniane
+Materiały podłogowe
+Drewno opałowe
+Kamieniarstwo budowlane
+Biuro nieruchomości
+Meble biurowe
+Przeprowadzki
+Betoniarstwo
+Materiały drewnopochodne
+Przedsiębiorstwo wodociągowe
+Brukarstwo
+Budownictwo mieszkalne
+Instalacje przeciwpożarowe
+Wykonawca
+Wykonawca schodów
+Wykonawca izolacji
+Projektant wnętrz
+Inżynier budownictwa
+Hydraulik
+Architekt
+Rzeczoznawca ds. wyceny nieruchomości
+Wykonawca ogrodzeń
+Zarządca nieruchomości
+Stolarz meblowy
+Deweloper
+Nieruchomości
+Szklarz
+Sprzęt budowlany
+Wykonawca poręczy i balustrad
+Konstrukcje stalowe
+Dźwigi
+Roślinność
+Kominy
+Rusztowania
+Kominki
+Biuro architekta wnętrz
+Montaż okienObróbka metali
+Wynajem urządzeń dźwignicowych
+=============== USŁUGI ==================
+Punkt napełnia tuszy do drukowania
+Złotnik
+Organizacja wspierająca osoby niepełnosprawne
+Budynek
+Agencja wynajmu powierzchni biurowych
+Usługi prawne
+Usługi poligraficzne
+Usługi reklamowe
+Usługi informatyczne
+Usługi spedycyjne
+Usługi logistyczne
+Paczkomat
+Usługi promowe
+Szwalnia
+Przechowalnia samochodów kempingowych
+Złota rączka
+Usługi dystrybucyjne
+Usługi krawieckie
+Instytucja finansowa
+Usługi księgowe
+Zakład energetyczny
+Usługi pocztowe
+Usługi sprzątania
+Usługi kolejowe
+Architekt krajobrazu
+Usługi pocztowe i kurierskie
+Biuro pośrednictwa pracy
+Salon piękności
+Prywatny detektyw
+Masaż erotyczny
+Salon kosmetyczny
+Magazyn
+Stowarzyszenie lub organizacja
+Salon fryzjerski
+Zakład pogrzebowy
+Didżej
+Zakład fotograficzny
+Tłumacz
+Krawiec
+Salon
+Artysta
+Zegarmistrz
+Fotograf
+Fotograf weselny
+Siedziba firmy
+Jubiler
+Spawacz
+Ślusarz
+Park biznesu
+Centrum biznesowe
+Tapicer
+Szewc
+Rękodzieło artystyczne
+Solarium
+Biuro coworkingowe
+Studio nagrań
+Studio Makijażu
+Studio fotografii
+Studio tatuażu
+Wideofilmowanie
+Sale konferencyjne
+Przesyłki kurierskie
+Punkt ksero
+Pielęgnacja stóp
+Obsługa przyjęć dla dzieci
+Usługi w zakresie higieny pracy
+Bezpieczeństwo i higiena pracy
+Usługi dla biznesu
+Opieka nad osobami starszymi
+Fryzjer dla zwierząt
+Ochrona przed szkodnikami
+Planowanie wesel
+Obiekt przeznaczony do organizacji imprez
+Prace na wysokościach
+Papiernia
+Centrum obsługi klienta
+Organizator imprez
+Depilacja laserowa
+Dorabianie kluczy
+Montaż stoisk wystawowych
+Utylizacja ścieków
+Czyszczenie kominów
+Projektowanie stron WWW
+Malowanie proszkowe
+Pralnia samoobsługowa
+Agencja artystyczna
+Firma telefoniczna
+Rozgłośnia radiowa
+Logistyka
+Agencja reklamowa
+Agencja kredytowa
+Firma
+Firma przeładunkowa
+Usługa inwestycyjna
+Telekomunikacja
+Firma ochroniarska
+Reklama świetlna
+Agencja interaktywna
+Windykacja
+Rekrutacja
+Agencja ochrony
+Agencja marketingowa
+Centrum diagnostyki obrazowej
+Sala balowa
+Pralnia
+Przechowalnia
+Stacja telewizyjna
+Sala weselna
+Sala bankietowa
+Chłodnia
+Szklarnia
+Biuro projektowe
+Biuro ogłoszeń
+Operator telewizji kablowej
+Elektryk
+Zakłady bukmacherskie
+Biuro pośrednictwa pracy tymczasowej
+Hotel dla kotów
+Punkt napełnia tuszy do drukowani
+Lombard
+Kantor
+Automatyka
+Skup złomu i surowców wtórnych
+Centrum konferencyjne
+=============== NOCLEGI ==================
+Hotel 2-gwiazdkowy
+Zajazd
+Kemping
+Hotel 4-gwiazdkowy
+Hotel
+Hotel 1-gwiazdkowy
+Pensjonat
+Hotel 5-gwiazdkowy
+Hotel 3-gwiazdkowy
+2-gwiazdkowy hotel turystyczny
+Willa
+Kwatera gościnna
+Przystań
+Przystań żeglarska
+Blok mieszkalny
+Kompleks mieszkalny
+Internat
+Agroturystyka
+Apartamenty wczasowe
+Noclegi ze śniadaniem
+Apartament wakacyjny
+Kurort
+Schronisko górskie
+Sanatorium
+Dom wakacyjny
+Dom wypoczynkowy dla niepalących
+Obsługa noclegów
+Zakwaterowanie z wyżywieniem we własnym zakresie
+Zakwaterowanie przyjazne zwierzętom
+Noclegi pod dachem
+Wynajem domków letniskowych
+Osiedle mieszkaniowe
+Akademik
+Nadleśnictwo
+Noclegi
+============== INNE ===============
+Zamknięte na stałe
+Tymczasowo zamknięte
+DNF

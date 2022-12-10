@@ -1,0 +1,19 @@
+Cluster                                       fake_count_PL    real_count_PL    count_PL    fake_count    real_count    count
+------------------------------------------  ---------------  ---------------  ----------  ------------  ------------  -------
+TRANSPORT                                                54              343         397            55           381      436
+DOSTAWCY I PRODUCENCI                                   169              155         324           170           185      355
+USŁUGI I PLACÓWKI MEDYCZNE                              187              188         375           189           189      378
+SERIWSY I NAPRAWY                                       129               30         159           129            30      159
+MIEJSCA I INSTYTUCJE PUBLICZNE i PAŃSTWOWE                4              466         470             4           522      526
+EDUKACJA                                                 36               45          81            36            45       81
+PRZYRODA                                                 13              292         305            13           372      385
+TURYSTYKA, ROZRYWKA I SPORT                              96              699         795            98           763      861
+ZABYTKI I BUDYNKI SAKRALNE                                1              247         248             1           306      307
+SKLEPY                                                  302             1824        2126           313          1943     2256
+GASTRONOMIA                                             222             1436        1658           225          1551     1776
+MOTORYZACJA                                             141              245         386           148           254      402
+PRAWO I UBEZPIECZENIA                                   118               20         138           124            21      145
+BUDOWNICTWO                                             206              117         323           213           122      335
+USŁUGI                                                  417              187         604           419           213      632
+NOCLEGI                                                  94              541         635            94           615      709
+INNE                                                     59              227         286            59           257      316
