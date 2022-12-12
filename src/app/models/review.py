@@ -21,15 +21,17 @@ class ReviewBase(BaseModel):
     type_of_object: str
     response_content: Optional[str]
     date: datetime
-    is_private: bool
+    is_private: Optional[bool]
     cluster: Optional[CLUSTER_TYPES]
     is_real: Optional[bool]
 
-class ReviewOldInDB(ReviewBase):
-    _id: ObjectId
+class ReviewOldBase(ReviewBase):
     full_flag: bool
-    wrong_address: bool
-    wrong_url_flag: bool
+    wrong_address: Optional[bool]
+    wrong_url_flag: Optional[bool]
+
+class ReviewOldInDB(ReviewOldBase):
+    _id: ObjectId
 
 class ReviewNewBase(ReviewBase):
     place_address: str

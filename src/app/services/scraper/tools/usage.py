@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
+from app.dao.reviewsOldDao import ReviewsOldDao
 from app.services.database.database import Database
 from app.services.scraper.models.review import Review
 from app.services.scraper.tools.html_markers_tools import HTMLMarkers
@@ -250,5 +251,5 @@ class ScraperUsage:
 if __name__ == '__main__':
     usage = ScraperUsage(headless=False)
     #usage.discover_new_markers()
-    usage.collect_data_from_place(
-        url="https://www.google.pl/maps/place/Salon+meblowy+Black+Red+White+-+meble+Warszawa/@52.1915787,20.9598395,14z/data=!4m5!3m4!1s0x471934adc20fc469:0xeffca447261b4baa!8m2!3d52.2030371!4d20.9362185")
+    # usage.collect_data_from_place(
+    #     url="https://www.google.pl/maps/place/Salon+meblowy+Black+Red+White+-+meble+Warszawa/@52.1915787,20.9598395,14z/data=!4m5!3m4!1s0x471934adc20fc469:0xeffca447261b4baa!8m2!3d52.2030371!4d20.9362185")

@@ -4,7 +4,7 @@
 # IntelliJ project files
 .idea
 *.iml
-.env
+*.env
 out
 gen
 .xml
