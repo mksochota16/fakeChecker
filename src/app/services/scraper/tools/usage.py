@@ -1,15 +1,28 @@
+from typing import Optional
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
-from app.dao.reviewsOldDao import ReviewsOldDao
+from app.config import STH2VEC
+from app.dao.dao_reviews_new import DAOReviewsNew
+from app.models.base_mongo_model import MongoObjectId
+from app.models.review import ReviewNew, ReviewNewInDB
+from app.models.place import Place
+from app.models.types_cluster import CLUSTER_TYPES
+from app.models.position import Position as PositionNew
+
+from app.dao.dao_places import DAOPlaces
+
+from app.services.analysis.sth2vec import Sth2Vec
 from app.services.database.database import Database
-from app.services.scraper.models.review import Review
+from app.services.predictions.prediction_tools import predict_reviews_from_place
+from app.services.scraper.models.review import Review as ReviewOldModel
 from app.services.scraper.tools.html_markers_tools import HTMLMarkers
 from app.services.scraper.tools.info_scrape_tools import *
 from app.services.scraper.tools import io_files_handler
 from app.services.scraper.tools.simple_scrape_tools import *
-from app.services.scraper.utils.magic_scroll_formula import magic_scroll_formula
+from app.services.scraper.tools.info_scrape_tools import convert_from_relative_to_absolute_date
 
 
 class ScraperUsage:
@@ -25,15 +38,34 @@ class ScraperUsage:
         self.og_database = Database(original_database=True)
         self.new_database = Database(original_database=False)
 
-    def collect_data_from_place(self, url):
+    def collect_data_from_place(self, url) -> MongoObjectId:
         self.simple_scrape_tools.start_scraping(url)
         self.info_scrape_tools.wait_for_place_site_to_load()
 
         response = BeautifulSoup(self.driver.page_source, 'html.parser')
-        place_header = response.find(class_=self.html_markers_dict['place_header'])
-        place_address = response.find(class_=self.html_markers_dict['place_address'])
-        number_of_reviews = self.info_scrape_tools.get_number_of_reviews_of_place(response)
-        type_of_object = self.info_scrape_tools.getPlaceType(response)
+        place_name: str = response.find(class_=self.html_markers_dict['place_name']).text.strip()
+        place_address: str = response.find(class_=self.html_markers_dict['place_address']).text.strip()
+        place_localization: PositionNew = geocode_api.forward_geocode(place_address, new_model=True)
+        number_of_reviews: int = self.info_scrape_tools.get_number_of_reviews_of_place(response)
+        place_rating: float = float(
+            response.find(class_=self.html_markers_dict['place_rating']).contents[0].text.replace(',', '.'))
+        place_url: str = self.driver.current_url
+        type_of_object: str | None = self.info_scrape_tools.get_place_type(response)
+        place_cluster: CLUSTER_TYPES = STH2VEC.classify_type_of_object(type_of_object)
+
+        dao_places: DAOPlaces = DAOPlaces()
+        place: Place = Place(
+            name=place_name,
+            url=place_url,
+            address=place_address,
+            localization=place_localization,
+            rating=place_rating,
+            number_of_reviews=number_of_reviews,
+            cluster=place_cluster,
+            type_of_object=type_of_object
+        )
+
+        place_id: MongoObjectId = dao_places.insert_one(place)
 
         self.simple_scrape_tools.wait_for_element_and_click(By.XPATH,
                                                             "//div[contains(@jsaction,'pane.rating.moreReviews')]")  # constant value for now
@@ -41,53 +73,75 @@ class ScraperUsage:
 
         response = BeautifulSoup(self.driver.page_source, 'html.parser')
 
-        # reviewer_names = response.find_all(class_=self.html_markers_dict['place_reviewer_name'])
-        # reviewer_content = response.find_all(class_=self.html_markers_dict['place_reviewer_content'])
-        # reviewer_content = response.find_all(class_=self.html_markers_dict['place_reviewer_contents'])
         reviews_sections = response.find_all(class_=self.html_markers_dict['place_single_reviewer_section'])
         for reviewer_section in reviews_sections:
             reviewer_name = self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_name'],
-                                                                          reviewer_section).text
-            content = self.info_scrape_tools.find_using_html_marker(
-                self.html_markers_dict['place_reviewer_content'], reviewer_section)[0].text
-            stars = self.info_scrape_tools.find_using_html_marker(
-                self.html_markers_dict['all_reviewer_stars'], reviewer_section).attrs['aria-label'][1]
-            reviewer_id = self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_url'],
-                                                                         reviewer_section).attrs['href'].split('/')[5]
-            review_id = self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_review_id'],
-                                                                         reviewer_section).attrs['data-review-id']
-            date = self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_date'],
-                                                                        reviewer_section).text
-            profile_picture_src = self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_png'],
-                                                                        reviewer_section).attrs['src']
+                                                                          reviewer_section).text.strip()
+            content: str = self.info_scrape_tools.find_using_html_marker(
+                self.html_markers_dict['place_reviewer_content'], reviewer_section).text.strip()
+            stars: int = int(self.info_scrape_tools.find_using_html_marker(
+                self.html_markers_dict['all_reviewer_stars'], reviewer_section).attrs['aria-label'][1])
+            reviewer_url: str = \
+            self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_url'],
+                                                          reviewer_section).attrs['href']
+            reviewer_id: str = reviewer_url.split('/')[5]
+            review_id: str = \
+            self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_review_id'],
+                                                          reviewer_section).attrs['data-review-id']
+            date_relative: str = self.info_scrape_tools.find_using_html_marker(
+                self.html_markers_dict['place_reviewer_date'],
+                reviewer_section).text.replace("Nowa", "").strip()
+            date_absolute: datetime = convert_from_relative_to_absolute_date(date_relative)
+            profile_picture_src: str = \
+            self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_png'],
+                                                          reviewer_section).attrs['src']
 
             try:
-                detailed_info = self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_local_guide_and_reviews'],
-                                                                        reviewer_section).text.split(' ')
-                is_local_guide = len(detailed_info) > 2
-                number_of_reviews = self.info_scrape_tools.get_number_of_reviews_from_split_text(detailed_info[3:])
+                detailed_info = self.info_scrape_tools.find_using_html_marker(
+                    self.html_markers_dict['place_reviewer_local_guide_and_reviews'],
+                    reviewer_section).text.split(' ')
+                is_local_guide: bool = len(detailed_info) > 2
+                number_of_reviews: int = self.info_scrape_tools.get_number_of_reviews_from_split_text(detailed_info[3:])
             except:
-                is_local_guide = False
-                number_of_reviews = 1
+                is_local_guide: bool = False
+                number_of_reviews: int = 1
 
-            photos_urls = []
+            photos_urls: List[str] = []
             try:
-                photo_section = self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_photo_section'], reviewer_section)
-                photos = self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_photo'], photo_section, multiple=True)
+                photo_section = self.info_scrape_tools.find_using_html_marker(
+                    self.html_markers_dict['place_reviewer_photo_section'], reviewer_section)
+                photos = self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_photo'],
+                                                                       photo_section, multiple=True)
                 for photo in photos:
                     photos_urls.append(photo.attrs['style'].split("\'")[1])
             except:
                 pass
 
-
             try:
-                review_response = reviewer_section.find(
-                    class_=self.html_markers_dict['place_reviewer_response_content'])
+                review_response: Optional[str] = self.info_scrape_tools.find_review_response(reviewer_section)
             except:
-                review_response = None
-        # reviewer_stars = response.find_all(class_=self.html_markers_dict['all_reviewer_stars'])
-        # reviewer_date = response.find_all(class_=self.html_markers_dict['place_reviewer_date'])
-        # reviewer_urls = response.find_all(class_=self.html_markers_dict['place_reviewer_url'])
+                review_response: Optional[str] = None
+
+            dao_reviews:DAOReviewsNew = DAOReviewsNew()
+            review: ReviewNew = ReviewNew(
+                review_id=review_id,
+                rating=stars,
+                content=content,
+                reviewer_url=reviewer_url,
+                reviewer_id=reviewer_id,
+                photos_urls=photos_urls,
+                response_content=review_response,
+                date=date_absolute,
+
+                is_local_guide=is_local_guide,
+                number_of_reviews=number_of_reviews,
+                profile_photo_url=profile_picture_src,
+                reviewer_name=reviewer_name,
+                place_id=place_id
+            )
+            dao_reviews.insert_one(review)
+
+        return place_id
 
     def google_maps_place_scraper(self, url):
         self.simple_scrape_tools.start_scraping(url)
@@ -209,7 +263,7 @@ class ScraperUsage:
                         for photo in photos_info:
                             image_url = photo.attrs['style'].split('(')[1][-1]
                             photos_urls.append(image_url)
-                        review_date = self.info_scrape_tools.getAbsoluteTime(response, place_iterator)
+                        review_date = self.info_scrape_tools.find_and_get_absolute_date(response, place_iterator)
                         try:
                             response_content = response.find_all(
                                 class_=re.compile(self.html_markers_dict['reviewer_reviews_response_content'][0]))[
@@ -228,10 +282,12 @@ class ScraperUsage:
                             place_url = None
                             type_of_object = None
 
-                        review = Review(review_id=data_review_id, place_name=place_name, rating=stars, content=content,
-                                        reviewer_url=account.reviewer_url, place_url=place_url,
-                                        type_of_object=type_of_object,
-                                        localization=position, response_content=response_content, date=review_date)
+                        review = ReviewOldModel(review_id=data_review_id, place_name=place_name, rating=stars,
+                                                content=content,
+                                                reviewer_url=account.reviewer_url, place_url=place_url,
+                                                type_of_object=type_of_object,
+                                                localization=position, response_content=response_content,
+                                                date=review_date)
                         self.new_database.save_review(review)
                         print("Added a review to the database")
                     except IndexError:
@@ -246,10 +302,3 @@ class ScraperUsage:
         self.info_scrape_tools = InfoScrapeTools(self.driver, self.simple_scrape_tools, self.html_markers_dict)
         self.html_markers = HTMLMarkers(self.driver, self.simple_scrape_tools, self.info_scrape_tools,
                                         self.html_markers_dict)
-
-
-if __name__ == '__main__':
-    usage = ScraperUsage(headless=False)
-    #usage.discover_new_markers()
-    # usage.collect_data_from_place(
-    #     url="https://www.google.pl/maps/place/Salon+meblowy+Black+Red+White+-+meble+Warszawa/@52.1915787,20.9598395,14z/data=!4m5!3m4!1s0x471934adc20fc469:0xeffca447261b4baa!8m2!3d52.2030371!4d20.9362185")

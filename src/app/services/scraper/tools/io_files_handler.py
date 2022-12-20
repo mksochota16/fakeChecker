@@ -1,13 +1,9 @@
 import pandas as pd
 
-from app.services.scraper.utils import geolocation
-from app.services.scraper.models.people_simple_credentials import PeopleSimpleCredentials
-from app.services.scraper.models.account_details import AccountDetails
-from app.services.scraper.models.position import Position
 
 def get_saved_html_markers():
     markers_dict = {}
-    f = open(f"../../../data/html_markers.txt", "r")
+    f = open(f"app/data/html_markers.txt", "r")
     lines = f.readlines()
     for line in lines:
         data = line.split("; ")
@@ -24,14 +20,14 @@ def get_saved_html_markers():
 
 
 def save_new_html_markers(markers_dict):
-    f = open(f"../../../data/html_markers.txt", "w")
+    f = open(f"app/data/html_markers.txt", "w")
     for key in markers_dict:
         f.write(f"{key}; {markers_dict[key]}\n")
     f.close()
 
 
 def get_clusters():
-    f = open(f"../../../data/CLUSTERS.txt", 'r', encoding='UTF-8')
+    f = open(f"app/data/CLUSTERS.txt", 'r', encoding='UTF-8')
     lines = f.readlines()
     clusters_dict = {}
     cluster_name = None
@@ -52,7 +48,7 @@ def get_clusters():
 
 
 def update_clusters(new_type, cluster):
-    with open("../../../data/CLUSTERS.txt", "r", encoding='UTF-8') as f:
+    with open("app/data/CLUSTERS.txt", "r", encoding='UTF-8') as f:
         contents = f.readlines()
 
     index = 0
@@ -64,20 +60,20 @@ def update_clusters(new_type, cluster):
 
     contents.insert(index + 1, new_type + '\n')
 
-    with open("../../../data/CLUSTERS.txt", "w", encoding='UTF-8') as f:
+    with open("app/data/CLUSTERS.txt", "w", encoding='UTF-8') as f:
         contents = "".join(contents)
         f.write(contents)
 
 
 def import_dataframes_from_names_files():
-    male_names = pd.read_csv('../../../data/polish-male-names.csv').drop('PŁEĆ', 1)
-    female_names = pd.read_csv('../../../data/polish-female-names.csv').drop('PŁEĆ', 1)
+    male_names = pd.read_csv('app/data/polish-male-names.csv').drop('PŁEĆ', 1)
+    female_names = pd.read_csv('app/data/polish-female-names.csv').drop('PŁEĆ', 1)
     names = pd.concat([male_names, female_names])
     names['sum'] = names.groupby("IMIĘ_PIERWSZE")['LICZBA_WYSTĄPIEŃ'].transform('sum')
     names = names.drop('LICZBA_WYSTĄPIEŃ', 1)
 
-    male_surnames = pd.read_csv('../../../data/polish-male-surnames.csv')
-    female_surnames = pd.read_csv('../../../data/polish-female-surnames.csv')
+    male_surnames = pd.read_csv('app/data/polish-male-surnames.csv')
+    female_surnames = pd.read_csv('app/data/polish-female-surnames.csv')
     surnames = pd.concat([male_surnames, female_surnames])
     surnames['sum'] = surnames.groupby("Nazwisko aktualne")['Liczba'].transform('sum')
     surnames = surnames.drop('Liczba', 1)

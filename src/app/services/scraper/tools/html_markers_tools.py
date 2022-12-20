@@ -96,10 +96,11 @@ class HTMLMarkers:
                                             got_parameters = True
                                         elif info.attrs['jsaction'] == 'pane.rating.moreReviews':
                                             name_dict['place_number_of_reviews'] = simple_scrape_tools.getClassName(info.parent)
+                                            name_dict['place_rating'] = simple_scrape_tools.getClassName(info)
                                         elif 'Fair Winds - kursy src, RYA, nawigacji morskiej' in info.text:
                                             for sub_div in info.find_all():
                                                 if sub_div.text == 'Fair Winds - kursy src, RYA, nawigacji morskiej':
-                                                    name_dict['place_header'] = simple_scrape_tools.getClassName(sub_div)
+                                                    name_dict['place_name'] = simple_scrape_tools.getClassName(sub_div)
                                         elif 'Puławska 12/3, 02-740 Warszawa' in info.text:
                                             name_dict['place_address'] = simple_scrape_tools.getClassName(info)
                                     except:
@@ -156,6 +157,7 @@ class HTMLMarkers:
                                                     name_dict['place_reviewer_response_content'] = [
                                                         simple_scrape_tools.getClassName(child.parent.parent.parent),
                                                         simple_scrape_tools.getClassName(child.parent.parent),
+                                                        simple_scrape_tools.getClassName(child.parent),
                                                         simple_scrape_tools.getClassName(child)]
                                                     has_content_response = True
                                                     break

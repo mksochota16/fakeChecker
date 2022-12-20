@@ -7,15 +7,16 @@ reviewer_number_of_reviews; Qha3nb
 reviewer_review_location; GHT2ce NsCY4
 reviewer_review_label; d4r55 YJxk2d
 trans_more_info_button; lzIite PpaGLb
-place_header; DUwDvf fontHeadlineLarge
+place_name; DUwDvf fontHeadlineLarge
 place_number_of_reviews; fontBodyMedium dmRWX
+place_rating; F7nice mmu3tf
 place_description; ['skqShb', 'fontBodyMedium', 'fontBodyMedium']
 place_address; CsEnBe
 place_reviewer_content; ['MyEned', 'wiI7pd']
 place_reviewer_contents; MyEned
 place_reviewer_date; DU9Pgb
 all_reviewer_stars; kvMYJc
-place_reviewer_response_content; ['jJc9Ad', 'GHT2ce', 'wiI7pd']
+place_reviewer_response_content; ['jJc9Ad', 'GHT2ce', 'CDe7pd', 'wiI7pd']
 place_reviewer_review_id; GBkF3d
 place_reviewer_name; d4r55
 place_reviewer_local_guide_and_reviews; RfnDt

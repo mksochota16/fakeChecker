@@ -1,17 +1,18 @@
 from math import cos, asin, sqrt, pi
 
-from app.services.scraper.models.position import Position
+from app.services.scraper.models.position import Position as PositionOld
+from app.models.position import Position as PositionNew
 
 
 # returns distance in km on the globe
 def distance(pos1, pos2):
-    if isinstance(pos1, Position):
+    if isinstance(pos1, PositionOld) or isinstance(pos1, PositionNew):
         lat1 = float(pos1.lat)
         lon1 = float(pos1.lon)
     else:
         lat1 = float(pos1[0])
         lon1 = float(pos1[1])
-    if isinstance(pos2, Position):
+    if isinstance(pos2, PositionOld) or isinstance(pos2, PositionNew):
         lat2 = float(pos2.lat)
         lon2 = float(pos2.lon)
     else:

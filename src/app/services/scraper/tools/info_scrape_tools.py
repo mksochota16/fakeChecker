@@ -9,7 +9,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 
-from app.services.scraper.utils import geolocation
+from app.services.analysis import geolocation
 from app.services.scraper.models.people_simple_credentials import PeopleSimpleCredentials
 from app.services.scraper.models.position import Position
 from app.services.scraper.tools import geocode_api
@@ -40,6 +40,36 @@ def delete_unsupported_characters(type_of_object):
         return new_place_type
 
 
+def convert_from_relative_to_absolute_date(relative_date) -> datetime:
+    relative_date = relative_date.replace("\xa0", " ")
+    data = relative_date.split(' ')
+    # unit is amount of days
+    if len(data) == 1:
+        value = 1
+        unit = 'dzieñ'
+    elif len(data) == 2:
+        value = 1
+        unit = data[0]
+    elif len(data) == 3:
+        value = int(data[0])
+        unit = data[1]
+    else:
+        return None
+    if unit == "godzin" or unit == "godzinê" or unit == "godziny" or unit == "minut" or unit == "minutê":
+        unit = 0
+    elif unit == "dzieñ" or unit == "dni" or unit == "dnia":
+        unit = 1
+    elif unit == "tydzieñ" or unit == "tygodnie":
+        unit = 7
+    elif unit == "miesi±c" or unit == "miesi±ce" or unit == "miesiêcy":
+        unit = 30
+    elif unit == "rok" or unit == "lata" or unit == "lat":
+        unit = 365
+    time_delta = timedelta(value * unit)
+    current_date = datetime.today()
+    return current_date - time_delta
+
+
 class InfoScrapeTools:
     def __init__(self, driver, simpleScrapeTools, html_markers_dict):
         self.driver = driver
@@ -59,7 +89,7 @@ class InfoScrapeTools:
         return number_of_reviews
 
 
-    def get_number_of_reviews_of_place(self, response=None):
+    def get_number_of_reviews_of_place(self, response=None) -> int:
         if response is None:
             response = BeautifulSoup(self.driver.page_source, 'html.parser')
         try:  # if on place page
@@ -174,7 +204,7 @@ class InfoScrapeTools:
     def wait_for_place_site_to_load(self):
         try:
             self.simpleScrapeTools.wait_for_element(By.XPATH,
-                                                    f"//*[@class='{self.html_markers_dict['place_header']}']")
+                                                    f"//*[@class='{self.html_markers_dict['place_name']}']")
             return 0
         except TimeoutException:
             return -1
@@ -250,7 +280,7 @@ class InfoScrapeTools:
             #     response.find(class_=re.compile("x3AX1-LfntMc-header-title")).find_all(class_="h0ySl-wcwwM-E70qVe")[1].find(
             #         class_=re.compile("widget-pane-link"))
             place_url = self.driver.current_url
-            type_of_object = self.getPlaceType(response)
+            type_of_object = self.get_place_type(response)
             self.simpleScrapeTools.navigate_back(1)
         except:
             pass
@@ -268,18 +298,18 @@ class InfoScrapeTools:
             stars_count = int(star_response.text.split('/')[0])
         return stars_count
 
-    def getPlaceType(self, place_response):
+    def get_place_type(self, place_response) -> str | None:
         try:
-            type_of_object = place_response.find(jsaction="pane.rating.category").text
+            return place_response.find(jsaction="pane.rating.category").text.strip()
         except:
-            type_of_object = None
-        return type_of_object
+            return None
 
     def find_from_complicated_html_marker(self, html_marker, context, level_of_recursion = 0):
         if isinstance(html_marker, list):
             if level_of_recursion + 1 == len(html_marker):
                 return context
-            search1 = context.find_all(class_=re.compile(html_marker[level_of_recursion]))
+            current_marker = html_marker[level_of_recursion]
+            search1 = context.find(class_=re.compile(current_marker))
             return self.find_from_complicated_html_marker(html_marker, search1, level_of_recursion + 1)
         else:
             raise TypeError("html_marker must be a list")
@@ -295,37 +325,25 @@ class InfoScrapeTools:
             else:
                 return context.find(class_=re.compile(html_marker))
 
+    def find_review_response(self, context):
+        review_response_markers = self.html_markers_dict['place_reviewer_response_content']
+        search1 = context.find_all(class_=re.compile(review_response_markers[0]))
+        search2 = search1[0].find_all(class_=re.compile(review_response_markers[1]))
+        search3 = search2[1].find_all(class_=re.compile(review_response_markers[2]))
+        search3 = search3[0].find_all(class_=re.compile(review_response_markers[3]))
+        return search3[0].text
 
-    def getAbsoluteTime(self, response, place_iterator):
-        relative_date = response.find_all(class_=re.compile(self.html_markers_dict['reviewer_review_relative_date']))[
-            place_iterator].text
+    # def get_reviewer_response(self, context) -> Optional[str]:
+    #     html_markers = self.html_markers_dict['place_reviewer_response_content']
+    #     search1 = context.find_all(class_=re.compile(html_markers[0]))
+    #     for sub_div in search1.:
+    #         if sub_div.find(class_=re.compile
+    def find_and_get_absolute_date(self, response, place_iterator, relative_date = None) -> datetime:
+        if relative_date is None:
+            relative_date = response.find_all(class_=re.compile(self.html_markers_dict['reviewer_review_relative_date']))[
+                place_iterator].text
         relative_date = relative_date.replace("\xa0", " ")
-        data = relative_date.split(' ')
-        # unit is amount of days
-        if len(data) == 1:
-            value = 1
-            unit = 'dzieñ'
-        elif len(data) == 2:
-            value = 1
-            unit = data[0]
-        elif len(data) == 3:
-            value = int(data[0])
-            unit = data[1]
-        else:
-            return None
-        if unit == "godzin" or unit == "godzinê" or unit == "godziny" or unit == "minut" or unit == "minutê":
-            unit = 0
-        elif unit == "dzieñ" or unit == "dni" or unit == "dnia":
-            unit = 1
-        elif unit == "tydzieñ" or unit == "tygodnie":
-            unit = 7
-        elif unit == "miesi±c" or unit == "miesi±ce" or unit == "miesiêcy":
-            unit = 30
-        elif unit == "rok" or unit == "lata" or unit == "lat":
-            unit = 365
-        time_delta = timedelta(value * unit)
-        current_date = datetime.today()
-        return current_date - time_delta
+        return convert_from_relative_to_absolute_date(relative_date)
 
     def find_the_right_results(self, lat, lon):
         try:
@@ -413,8 +431,8 @@ class InfoScrapeTools:
         if response is None:
             response = BeautifulSoup(self.driver.page_source, 'html.parser')
         place_url = self.driver.current_url
-        type_of_object = self.getPlaceType(response)
-        name = response.find(class_=re.compile(self.html_markers_dict['place_header'])).text[1:-2]
+        type_of_object = self.get_place_type(response)
+        name = response.find(class_=re.compile(self.html_markers_dict['place_name'])).text[1:-2]
         cluster = sth2vec_obj.classify_type_of_object(type_of_object)
         response = BeautifulSoup(self.driver.page_source, 'html.parser')
         address = response.find(class_=self.html_markers_dict['place_address'])
