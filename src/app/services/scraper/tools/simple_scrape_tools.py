@@ -46,8 +46,9 @@ def getClassName(div):
 
 
 class SimpleScrapeTools:
-    def __init__(self, driver):
+    def __init__(self, driver, html_markers_dict):
         self.driver = driver
+        self.html_markers_dict = html_markers_dict
 
     def accept_terms_and_conditions(self):
         try:
@@ -80,26 +81,18 @@ class SimpleScrapeTools:
         wait = WebDriverWait(self.driver, wait_time)
         wait.until(EC.presence_of_element_located((by_what, search_text)))
 
-    def scroll_down(self, how_much_wait_at_page_end=-1, is_search_result=False, scrollbox_selector="//div[contains(@class,'m6QErb DxyBCb kA9KIf dS8AEf')]", max_seconds=-1, number_of_scrolls=-1):
-        # TODO automize marker names
+    def scroll_down(self, how_much_wait_at_page_end=-1, is_search_result=False, max_seconds=-1, number_of_scrolls=-1):
+        scrollbox_selector = f"//div[contains(@class,'{self.html_markers_dict['scrollable_div']}')]" # "//div[contains(@class,'m6QErb DxyBCb kA9KIf dS8AEf')]"
         index = 0
         if is_search_result:
             index = 1
         self.wait_for_element(By.XPATH, scrollbox_selector)
-        # "//div[contains(@class,'siAUzd-neVct section-scrollbox cYB2Ge-oHo7ed cYB2Ge-ti6hGc')]")
         scrollable_div = self.driver.find_elements(By.XPATH,
-            scrollbox_selector
-            # "//div[contains(@class,'siAUzd-neVct section-scrollbox cYB2Ge-oHo7ed cYB2Ge-ti6hGc')]"
-        )[index]
-        # for i in range(how_much):
-        #     self.driver.execute_script(
-        #         'arguments[0].scrollTop = arguments[0].scrollHeight',
-        #         scrollable_div
-        #     )
-        #     time.sleep(0.5)
+            scrollbox_selector)[index]
         stopped_scrolling_counter = 0
         last_height = self.driver.execute_script("return document.body.scrollHeight")
         start = time.time()
+        # inner_timer_start = -1
         while True:
             self.driver.execute_script(
                         'arguments[0].scrollTop = arguments[0].scrollHeight',
@@ -119,6 +112,15 @@ class SimpleScrapeTools:
             if max_seconds != -1:
                 if time.time() - start > max_seconds:
                     break
+
+                # new_height = self.driver.execute_script("return document.body.scrollHeight")
+                # if last_height == new_height:
+                #     if inner_timer_start == -1:
+                #         inner_timer_start = time.time()
+                #     if inner_timer_start != -1  and time.time() - inner_timer_start > 3:
+                #         break
+                # else:
+                #     inner_timer_start = -1
 
             if number_of_scrolls > 0:
                 number_of_scrolls -= 1

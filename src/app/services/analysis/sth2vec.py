@@ -167,22 +167,28 @@ class Sth2Vec:
         if mode == 'centers':
             centers_dict = {}
             for key in cluster_dict:
-                vector_sum = np.zeros(300)
+                if self.model_provider == 'gensim':
+                    vector_sum = np.zeros(800)
+                elif self.model_provider == 'fasttext':
+                    vector_sum = np.zeros(300)
+                else:
+                    raise Exception('Not supported action')
+
                 for object_type in cluster_dict[key]:
-                    vector_sum += self.fasttext_model.get_sentence_vector(object_type)
+                    vector_sum += self.get_vector_of_sentence(object_type)
                 centers_dict[key] = vector_sum / len(cluster_dict[key])
             dist_dict = {}
             for key in centers_dict:
                 dist_dict[key] = np.linalg.norm(
-                    self.fasttext_model.get_sentence_vector(type_of_object) - centers_dict[key])
+                    self.get_vector_of_sentence(type_of_object) - centers_dict[key])
             return min(dist_dict, key=lambda k: dist_dict[k])
         elif mode == 'dist_mean':
             dist_dict = {}
             for key in cluster_dict:
                 dist_sum = 0
-                new_vector = self.fasttext_model.get_sentence_vector(type_of_object)
+                new_vector = self.get_vector_of_sentence(type_of_object)
                 for object_type in cluster_dict[key]:
-                    known_vector = self.fasttext_model.get_sentence_vector(object_type)
+                    known_vector = self.get_vector_of_sentence(object_type)
                     dist_sum += np.linalg.norm(new_vector - known_vector)
                 dist_dict[key] = dist_sum / len(cluster_dict[key])
             return min(dist_dict, key=lambda k: dist_dict[k])
@@ -190,9 +196,9 @@ class Sth2Vec:
             dist_dict = {}
             for key in cluster_dict:
                 dist_list = []
-                new_vector = self.fasttext_model.get_sentence_vector(type_of_object)
+                new_vector = self.get_vector_of_sentence(type_of_object)
                 for object_type in cluster_dict[key]:
-                    known_vector = self.fasttext_model.get_sentence_vector(object_type)
+                    known_vector = self.get_vector_of_sentence(object_type)
                     dist_list.append(np.linalg.norm(new_vector - known_vector))
                 dist_dict[key] = min(dist_list)
             return min(dist_dict, key=lambda k: dist_dict[k])

@@ -1,7 +1,7 @@
 import random
 import statistics
 from statistics import mean, median, variance
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -9,10 +9,14 @@ from pyclustering.cluster.kmeans import kmeans
 from pyclustering.utils import distance_metric, type_metric
 from tabulate import tabulate
 
-from app.config import ENGLISH_TRANSLATION_CLUSTER_DICT
+from app.config import ENGLISH_TRANSLATION_CLUSTER_DICT, NLP
 from app.dao.dao_reviews_old import DAOReviewsOld
-from app.models.review import ReviewOldInDB
+from app.models.account import AccountBase, AccountOldInDB
+from app.models.place import PlaceInDB
+from app.models.review import ReviewOldInDB, ReviewPartialInDB, ReviewNewInDB, ReviewBase
 from app.services.analysis import geolocation
+from app.services.analysis.nlp_analysis import StyloMetrixResults
+from app.services.predictions.prediction_constants import AttributesModes
 from app.services.scraper.models.position import Position
 
 import pandas
@@ -55,7 +59,7 @@ def perform_all_prepared_analyses(account_id, database):
     show_ratings_histograms_for_account(account_id, database)
 
 
-def get_ratings_distribution_metrics(account_id: str, reviews_of_account: Optional[List[ReviewOldInDB]] = None):
+def get_ratings_distribution_metrics(account_id: str, reviews_of_account: Optional[List[Union[ReviewOldInDB, ReviewPartialInDB]]] = None):
     if reviews_of_account is None:
         dao_reviews_old: DAOReviewsOld = DAOReviewsOld()
         reviews_of_account: List[ReviewOldInDB] = dao_reviews_old.find_reviews_of_account(account_id)
@@ -70,11 +74,11 @@ def get_ratings_distribution_metrics(account_id: str, reviews_of_account: Option
     return list_mean, list_median, list_variance
 
 
-def get_geolocation_distribution_metrics(account_id, reviews_of_account: Optional[List[ReviewOldInDB]] = None):
+def get_geolocation_distribution_metrics(account_id, reviews_of_account: Optional[List[Union[ReviewOldInDB, ReviewPartialInDB]]] = None):
     if reviews_of_account is None:
         dao_reviews_old: DAOReviewsOld = DAOReviewsOld()
         reviews_of_account: List[ReviewOldInDB] = dao_reviews_old.find_reviews_of_account(account_id)
-    pos_list: List[Position] = [review.localization for review in reviews_of_account]
+    pos_list: List[Position] = [review.localization for review in reviews_of_account if not (review.localization.lon == 0.0 and review.localization.lat == 0.0)]
 
     kmeans_algorithm = calculateNMeans(pos_list)
     distances_to_centroids = get_distances_to_centroids(kmeans_algorithm, pos_list, if_round=False)
@@ -88,7 +92,7 @@ def get_geolocation_distribution_metrics(account_id, reviews_of_account: Optiona
 
 
 def get_percentage_of_photographed_reviews(account_id,
-                                           reviews_of_account: Optional[List[ReviewOldInDB]] = None) -> float:
+                                           reviews_of_account: Optional[List[Union[ReviewOldInDB, ReviewPartialInDB]]] = None) -> float:
     if reviews_of_account is None:
         dao_reviews_old: DAOReviewsOld = DAOReviewsOld()
         reviews_of_account: List[ReviewOldInDB] = dao_reviews_old.find_reviews_of_account(account_id)
@@ -99,7 +103,7 @@ def get_percentage_of_photographed_reviews(account_id,
 
 
 def get_percentage_of_responded_reviews(account_id,
-                                        reviews_of_account: Optional[List[ReviewOldInDB]] = None) -> float:
+                                        reviews_of_account: Optional[List[Union[ReviewOldInDB, ReviewPartialInDB]]] = None) -> float:
     if reviews_of_account is None:
         dao_reviews_old: DAOReviewsOld = DAOReviewsOld()
         reviews_of_account: List[ReviewOldInDB] = dao_reviews_old.find_reviews_of_account(account_id)
@@ -119,7 +123,7 @@ def show_ratings_histograms_for_account(account_id, database):
     plt.show()
 
 
-def get_type_of_objects_counts_for_account(account_id, reviews_of_account: Optional[List[ReviewOldInDB]] = None):
+def get_type_of_objects_counts_for_account(account_id, reviews_of_account: Optional[List[Union[ReviewOldInDB, ReviewPartialInDB]]] = None):
     if reviews_of_account is None:
         dao_reviews_old: DAOReviewsOld = DAOReviewsOld()
         reviews_of_account: List[ReviewOldInDB] = dao_reviews_old.find_reviews_of_account(account_id)
@@ -245,3 +249,223 @@ def is_type_already_known(type_of_object, cluster_dict):
         if type_of_object in cluster_dict[key]:
             return True
     return False
+
+def parse_account_to_prediction_list(account: AccountBase, reviews_of_account: List[Union[ReviewOldInDB, ReviewPartialInDB]], with_scraped_reviews=False) -> list:
+    return _parse_account_data_to_prediction_list(account=account, reviews_of_account=reviews_of_account,
+                                                      with_scraped_reviews=with_scraped_reviews)
+
+def _parse_account_data_to_prediction_list(account: AccountBase,
+                                           reviews_of_account: List[Union[ReviewOldInDB, ReviewPartialInDB]],
+                                           with_scraped_reviews=False) -> list:
+    account_data = []
+
+    name_score = NLP.analyze_name_of_account(account.name)
+    account_data.append(name_score)
+
+    local_guide_level = account.local_guide_level
+    if local_guide_level is None:
+        local_guide_level = 0
+    account_data.append(local_guide_level)
+
+    number_of_reviews = account.number_of_reviews
+    if number_of_reviews is None:
+        number_of_reviews = 0
+    account_data.append(number_of_reviews)
+
+    is_private = account.is_private
+    is_probably_deleted = False
+    if is_private and number_of_reviews > 0:
+        is_probably_deleted = True
+    account_data.append(is_private)
+    account_data.append(is_probably_deleted)
+
+    if number_of_reviews == 0:
+        account_data.append(0)
+        account_data.append(0)
+        account_data.append(0)
+    else:
+        ratings_metrics = get_ratings_distribution_metrics(account.reviewer_id, reviews_of_account)
+        ratings_mean = ratings_metrics[0]
+        ratings_median = ratings_metrics[1]
+        ratings_variance = ratings_metrics[2]
+        account_data.append(ratings_mean)
+        account_data.append(ratings_median)
+        account_data.append(ratings_variance)
+
+    if number_of_reviews == 0:
+        account_data.append(0)
+        account_data.append(0)
+        account_data.append(0)
+    else:
+        geolocation_metrics = get_geolocation_distribution_metrics(account.reviewer_id, reviews_of_account)
+        geolocation_mean = geolocation_metrics[0]
+        geolocation_median = geolocation_metrics[1]
+        geolocation_variance = geolocation_metrics[2]
+        account_data.append(geolocation_mean)
+        account_data.append(geolocation_median)
+        account_data.append(geolocation_variance)
+
+    if number_of_reviews == 0:
+        account_data.append(0)
+    else:
+        photo_reviews_percentage = get_percentage_of_photographed_reviews(account.reviewer_id, reviews_of_account)
+        account_data.append(photo_reviews_percentage)
+
+    if number_of_reviews == 0:
+        account_data.append(0)
+    else:
+        responded_reviews_percentage = get_percentage_of_responded_reviews(account.reviewer_id, reviews_of_account)
+        account_data.append(responded_reviews_percentage)
+
+    if len(reviews_of_account) == 0:
+        account_data.append(0)
+        account_data.append(0)
+        account_data.append(0)
+
+        account_data.append(0)
+        account_data.append(0)
+        account_data.append(0)
+
+        account_data.append(0)
+        account_data.append(0)
+        account_data.append(0)
+
+    else:
+        sentiment = []
+        capslock = []
+        interpunction = []
+        for review in reviews_of_account:
+            sentiment.append(NLP.sentiment_analyzer.analyze(review.content))
+            capslock.append(NLP.get_capslock_score(review.content))
+            interpunction.append(NLP.get_interpunction_score(review.content))
+
+        account_data.append(mean(sentiment))
+        account_data.append(median(sentiment))
+        try:
+            account_data.append(variance(sentiment))
+        except statistics.StatisticsError:
+            account_data.append(0)
+
+        account_data.append(mean(capslock))
+        account_data.append(median(capslock))
+        try:
+            account_data.append(variance(capslock))
+        except statistics.StatisticsError:
+            account_data.append(0)
+
+        account_data.append(mean(interpunction))
+        account_data.append(median(interpunction))
+        try:
+            account_data.append(variance(interpunction))
+        except statistics.StatisticsError:
+            account_data.append(0)
+
+    if with_scraped_reviews:
+        cluster_names = ENGLISH_TRANSLATION_CLUSTER_DICT.values()
+        cluster_counter = get_type_of_objects_counts_for_account(account.reviewer_id, reviews_of_account)
+        for cluster_name in cluster_names:
+            account_data.append(cluster_counter[cluster_name])
+
+    return account_data
+
+def parse_old_review_to_prediction_list(review: ReviewOldInDB, account: AccountOldInDB, prediction_mode: AttributesModes, exclude_localization = True) -> list:
+    number_of_reviews = account.number_of_reviews
+    reviewer_name = account.name
+    is_local_guide = account.local_guide_level is not None
+    if exclude_localization:
+        localization = None
+    else:
+        localization = review.localization
+
+    return _parse_review_data_to_prediction_list(number_of_reviews,
+                                                 reviewer_name,
+                                                 review.cluster,
+                                                 is_local_guide,
+                                                 prediction_mode,
+                                                 localization,
+                                                 review)
+
+def parse_new_review_to_prediction_list(review: ReviewNewInDB, place_in_db: PlaceInDB, prediction_mode: AttributesModes, exclude_localization = True) -> list:
+    if exclude_localization:
+        localization = None
+    else:
+        localization = place_in_db.localization
+    return _parse_review_data_to_prediction_list(review.number_of_reviews,
+                                      review.reviewer_name,
+                                      place_in_db.cluster,
+                                      review.is_local_guide,
+                                      prediction_mode,
+                                      localization,
+                                      review)
+
+def _parse_review_data_to_prediction_list(number_of_reviews: int,
+                                          reviewer_name: str,
+                                          cluster_name: str,
+                                          is_local_guide: bool,
+                                          prediction_mode: AttributesModes,
+                                          localization: Optional[Position],
+                                          review: ReviewBase) -> list:
+    if number_of_reviews is None:
+        number_of_reviews = 0
+    review_data = [number_of_reviews, is_local_guide]
+
+    name_score = NLP.analyze_name_of_account(reviewer_name)
+    review_data.append(name_score)
+
+    review_data.append(review.rating)
+    clusters_list = list(ENGLISH_TRANSLATION_CLUSTER_DICT.values())
+    review_data.append(clusters_list.index(cluster_name))
+
+    review_data.append(len(review.content))
+    if review.response_content is not None:
+        review_data.append(len(review.response_content))
+    else:
+        review_data.append(0)
+    review_data.append(NLP.sentiment_analyzer.analyze(review.content))
+
+    if prediction_mode == AttributesModes.SENTIMENT:
+        return review_data
+
+    review_data.append(NLP.get_capslock_score(review.content))
+    review_data.append(NLP.get_interpunction_score(review.content))
+
+    if prediction_mode == AttributesModes.SENTIMENT_CAPS_INTER:
+        return review_data
+
+    if prediction_mode == AttributesModes.SIMPLE_NLP:
+        review_data.append(NLP.get_emotional_interpunction_score(review.content))
+        review_data.append(NLP.get_consecutive_emotional_interpunction_score(review.content))
+        review_data.append(NLP.get_emojis_score(review.content))
+        return review_data
+
+
+    stylo_metrix_analyzed: StyloMetrixResults = NLP.get_stylo_metrix_metrics(review.content)
+    review_data.append(stylo_metrix_analyzed.G_V)
+    review_data.append(stylo_metrix_analyzed.G_N)
+
+    review_data.append(stylo_metrix_analyzed.IN_V_INFL)
+
+    review_data.append(stylo_metrix_analyzed.L_TCCT1)
+
+    review_data.append(stylo_metrix_analyzed.PS_M_VALa)
+    review_data.append(stylo_metrix_analyzed.PS_M_AROa)
+    review_data.append(stylo_metrix_analyzed.PS_M_DOMa)
+
+    review_data.append(stylo_metrix_analyzed.PS_M_AROb)
+
+    if prediction_mode == AttributesModes.LESS_NLP:
+        return review_data
+
+    review_data.append(stylo_metrix_analyzed.G_ADV)
+    review_data.append(stylo_metrix_analyzed.PS_M_VALb)
+    review_data.append(stylo_metrix_analyzed.L_TCCT5)
+    review_data.append(stylo_metrix_analyzed.IN_V_1S)
+
+    if prediction_mode == AttributesModes.ALL_NLP:
+        return review_data
+
+    if localization is not None:
+        review_data.append(localization.lat)
+        review_data.append(localization.lon)
+
+    return review_data

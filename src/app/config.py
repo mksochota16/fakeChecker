@@ -8,6 +8,7 @@ from app.services.analysis.sth2vec import Sth2Vec
 
 load_dotenv()
 POSITIONSTACK_API_KEY = os.getenv("POSITIONSTACK_GEOCODE_API_KEY")
+GEOAPIFY_API_KEY = os.getenv("GEOAPIFY_GEOCODE_API_KEY")
 
 
 MONGODB_URI = os.getenv("MONGODB_URI")

@@ -125,6 +125,9 @@ class HTMLMarkers:
                                             reviewer_section = info.parent.parent.parent.parent.parent.parent.parent.parent
                                             name_dict['place_single_reviewer_section'] = simple_scrape_tools.getClassName(
                                                 reviewer_section)
+                                            name_dict[
+                                                'scrollable_div'] = simple_scrape_tools.getClassName(
+                                                reviewer_section.parent.parent)
                                             name_dict['place_reviewer_url'] = simple_scrape_tools.getClassName(reviewer_section.contents[1].contents[5].contents[1].contents[1])
                                             name_dict['place_reviewer_png'] = simple_scrape_tools.getClassName(reviewer_section.contents[1].contents[5].contents[1].contents[1].contents[1])
                                         elif info.attrs['aria-label'] == ' 5 gwiazdek ':
