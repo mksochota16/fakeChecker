@@ -250,8 +250,12 @@ def is_type_already_known(type_of_object, cluster_dict):
             return True
     return False
 
-def parse_account_to_prediction_list(account: AccountBase, reviews_of_account: List[Union[ReviewOldInDB, ReviewPartialInDB]], with_scraped_reviews=False) -> list:
-    return _parse_account_data_to_prediction_list(account=account, reviews_of_account=reviews_of_account,
+def parse_account_to_prediction_list(account: AccountBase, reviews_of_account: List[Union[ReviewOldInDB, ReviewPartialInDB]], with_scraped_reviews=False, bare_data=False) -> list:
+    if not bare_data:
+        return _parse_account_data_to_prediction_list(account=account, reviews_of_account=reviews_of_account,
+                                                      with_scraped_reviews=with_scraped_reviews)
+    else:
+        return _parse_account_data_to_prediction_list_bare(account=account, reviews_of_account=reviews_of_account,
                                                       with_scraped_reviews=with_scraped_reviews)
 
 def _parse_account_data_to_prediction_list(account: AccountBase,
@@ -276,8 +280,8 @@ def _parse_account_data_to_prediction_list(account: AccountBase,
     is_probably_deleted = False
     if is_private and number_of_reviews > 0:
         is_probably_deleted = True
-    account_data.append(is_private)
-    account_data.append(is_probably_deleted)
+    # account_data.append(is_private)
+     #account_data.append(is_probably_deleted)
 
     if number_of_reviews == 0:
         account_data.append(0)
@@ -365,6 +369,55 @@ def _parse_account_data_to_prediction_list(account: AccountBase,
         cluster_counter = get_type_of_objects_counts_for_account(account.reviewer_id, reviews_of_account)
         for cluster_name in cluster_names:
             account_data.append(cluster_counter[cluster_name])
+
+    return account_data
+
+def _parse_account_data_to_prediction_list_bare(account: AccountBase,
+                                           reviews_of_account: List[Union[ReviewOldInDB, ReviewPartialInDB]],
+                                           with_scraped_reviews=False) -> list:
+    account_data = []
+
+    local_guide_level = account.local_guide_level
+    if local_guide_level is None:
+        local_guide_level = 0
+    account_data.append(local_guide_level)
+
+    number_of_reviews = account.number_of_reviews
+    if number_of_reviews is None:
+        number_of_reviews = 0
+    account_data.append(number_of_reviews)
+
+    is_private = account.is_private
+    is_probably_deleted = False
+    if is_private and number_of_reviews > 0:
+        is_probably_deleted = True
+    # account_data.append(is_private)
+    # account_data.append(is_probably_deleted)
+
+    if number_of_reviews == 0:
+        account_data.append(0)
+        account_data.append(0)
+        account_data.append(0)
+    else:
+        ratings_metrics = get_ratings_distribution_metrics(account.reviewer_id, reviews_of_account)
+        ratings_mean = ratings_metrics[0]
+        ratings_median = ratings_metrics[1]
+        ratings_variance = ratings_metrics[2]
+        account_data.append(ratings_mean)
+        account_data.append(ratings_median)
+        account_data.append(ratings_variance)
+
+    if number_of_reviews == 0:
+        account_data.append(0)
+    else:
+        photo_reviews_percentage = get_percentage_of_photographed_reviews(account.reviewer_id, reviews_of_account)
+        account_data.append(photo_reviews_percentage)
+
+    if number_of_reviews == 0:
+        account_data.append(0)
+    else:
+        responded_reviews_percentage = get_percentage_of_responded_reviews(account.reviewer_id, reviews_of_account)
+        account_data.append(responded_reviews_percentage)
 
     return account_data
 

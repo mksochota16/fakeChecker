@@ -239,7 +239,7 @@ class ScraperUsage:
                     reviewer_id=reviewer_id,
                     place_name=place_name,
                     place_address=place_address,
-                    place_localization=place_localization,
+                    localization=place_localization,
                     rating=rating,
                     date=date_absolute,
                     content=content,

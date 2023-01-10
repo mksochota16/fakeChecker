@@ -10,6 +10,7 @@ class Database:
             self.db = self.client.scraperDatabase
         else:
             self.db = self.client.fakeChecker
+            self.reviews_partial = self.db.reviews_partial
         self.accounts_collection = self.db.accounts
         self.reviews_collection = self.db.reviews
         self.old_reviews_collection = self.db.reviews_old
@@ -313,5 +314,8 @@ class Database:
 
 
 if __name__ == '__main__':
-    db = Database()
+    db = Database(False)
+    reviews_partial = db.reviews_partial.find()
+    for review in reviews_partial:
+        db.reviews_partial.update_one({'review_id':review['review_id']}, {'$set': {'rating': int(review['rating'])}})
 

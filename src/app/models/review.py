@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.models.base_mongo_model import MongoDBModel, MongoObjectId
 from app.models.position import Position
@@ -59,8 +59,8 @@ class ReviewPartialBase(BaseModel):
     reviewer_id: str
     place_name: str
     place_address: str
-    place_localization: Position
-    rating: str
+    localization: Position
+    rating: int
     date: datetime
     content: Optional[str]
     response_content: Optional[str]

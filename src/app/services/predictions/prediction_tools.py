@@ -41,18 +41,18 @@ from app.services.predictions.prediction_constants import AttributesModes
 
 
 class AvailablePredictionModels(Enum):
-    DECISION_TREE = DecisionTreeClassifier()
+    # DECISION_TREE = DecisionTreeClassifier()
     RANDOM_FOREST = RandomForestClassifier(n_estimators=100)# RandomForestClassifier(max_depth=5, n_estimators=100, max_features=1) precision: 0.5082382762991128 f1: 0.6515028432168968
     # NEURAL_NETWORK = MLPClassifier(max_iter=1000) #MLPClassifier(alpha=1, max_iter=1000) precision: 0.2256020278833967 f1: 0.3371212121212121
     # K_NEIGHBORS = KNeighborsClassifier() # KNeighborsClassifier(3) precision: 0.9607097591888466 f1: 0.9171203871748337
     # SUPPORT_VECTOR_MACHINE = SVC() # SVC(gamma=2, C=1) precision: 0.0012674271229404308 f1: 0.002531645569620253
     # not enough RAM #GAUSSIAN_PROCESS = GaussianProcessClassifier(1.0 * RBF(1.0))
-    ADABOOST = AdaBoostClassifier(learning_rate=0.55)
+    # ADABOOST = AdaBoostClassifier(learning_rate=0.55)
     # NAIVE_BAYES = GaussianNB()
     # QUADRATIC_DISCRIMINANT_ANALYSIS = QuadraticDiscriminantAnalysis()
 
 
-def get_and_prepare_accounts_data(save_to_file=False):
+def get_and_prepare_accounts_data(save_to_file=False, bare_data=False):
     dao_accounts_old: DAOAccountsOld = DAOAccountsOld()
     accounts: List[AccountOldInDB] = dao_accounts_old.find_all()
     prepared_data = []
@@ -65,8 +65,7 @@ def get_and_prepare_accounts_data(save_to_file=False):
         dao_reviews_old: DAOReviewsOld = DAOReviewsOld()
         reviews_of_account: List[ReviewOldInDB] = dao_reviews_old.find_reviews_of_account(account.reviewer_id)
 
-        account_data: List = parse_account_to_prediction_list(account=account, reviews_of_account=reviews_of_account)
-
+        account_data: List = parse_account_to_prediction_list(account=account, reviews_of_account=reviews_of_account, bare_data=bare_data)
         prepared_data.append(account_data)
         if account.fake_service != "real":
             classes.append(True)
@@ -80,7 +79,11 @@ def get_and_prepare_accounts_data(save_to_file=False):
 
     print("\n")
     if save_to_file:
-        with open('app/data/formatted_accounts_data.csv', mode='w') as f:
+        if not bare_data:
+            file_path = 'app/data/formatted_accounts_data.csv'
+        else:
+            file_path = 'app/data/formatted_accounts_data_bare.csv'
+        with open(file_path, mode='w') as f:
             employee_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             for sample, _class in zip(prepared_data, classes):
                 sample_copy = sample.copy()
@@ -133,8 +136,11 @@ def get_and_prepare_reviews_data(attribute_mode: AttributesModes,save_to_file=Fa
     return prepared_data, classes
 
 
-def get_prepared_accounts_data_from_file(ignore_empty_accounts=False):
-    file_path = 'app/data/formatted_accounts_data.csv'
+def get_prepared_accounts_data_from_file(ignore_empty_accounts=False, bare_data = False):
+    if not bare_data:
+        file_path = 'app/data/formatted_accounts_data.csv'
+    else:
+        file_path = 'app/data/formatted_accounts_data_bare.csv'
     samples, classes = get_prepared_data_from_file(file_path, ignore_empty_accounts=ignore_empty_accounts)
     return samples, classes
 
@@ -159,7 +165,7 @@ def get_prepared_data_from_file(file_path, ignore_empty_accounts=False):
                 continue
 
             formatted_row = format_row_from_csv(row)
-            if ignore_empty_accounts and formatted_row[2] == 0:
+            if ignore_empty_accounts and formatted_row[2] == 0: #FIXME for normal data it should be 2
                 continue
             samples.append(formatted_row[:-1])
             classes.append(formatted_row[-1])
@@ -337,7 +343,7 @@ def separate_data_by_accounts_and_genuineness(classes, frac, samples):
 
 
 def build_model_return_predictions(train_samples, train_classes, test_samples):
-    decision_tree = SVC(gamma=2, C=1)# tree.DecisionTreeClassifier()
+    decision_tree = RandomForestClassifier(n_estimators=100)# tree.DecisionTreeClassifier()
     decision_tree = decision_tree.fit(train_samples, train_classes)
     return decision_tree.predict(test_samples), decision_tree
 
@@ -389,7 +395,7 @@ def calculate_metrics(TP, TN, FP, FN, ALL):
         f"Accuracy = {round(accuracy, 3)} | Prevalence = {round(prevalence, 3)} |\nF1 = {round(F1, 3)} | Precision = {round(precision, 3)} | Recall = {round(recall, 3)}")
 
 
-def k_fold_validation(k, whole_dataset, what_to_predict: str, resolve_backpack_problem=False):
+def k_fold_validation(k, whole_dataset, resolve_backpack_problem=False):
     if not resolve_backpack_problem:
         dict_samples, dict_classes = separate_data_into_k_folds(k, whole_dataset)
     else:
@@ -421,8 +427,8 @@ def k_fold_validation(k, whole_dataset, what_to_predict: str, resolve_backpack_p
         FN += FN_k
         ALL += ALL_k
     print(f"Average metrics of {k}-fold validation:")
-    pickle.dump(best_model, open(f"../../pickled_prediction_models/{what_to_predict}/model", 'wb'))
-    print("dumped")
+    # pickle.dump(best_model, open(f"../../pickled_prediction_models/{what_to_predict}/model", 'wb'))
+    # print("dumped")
     calculate_metrics(TP, TN, FP, FN, ALL)
 
 
@@ -452,7 +458,7 @@ def get_and_reshuffle_data(whole_dataset):
         samples, classes = get_and_prepare_accounts_data()
     else:
         samples, classes = whole_dataset
-    samples, classes = shuffle(samples, classes, random_state=42)
+    samples, classes = shuffle(samples, classes)
     return samples, classes
 
 
@@ -481,7 +487,7 @@ def predict_reviews_from_place(place_id: MongoObjectId, model_path: str = "app/p
         dao_reviews.update_one({"_id": review.id}, {"$set": {"is_real": not prediction[0]}})
     print("Reviews predictions updated")
 
-def predict_account(account_id: MongoObjectId, model_path: str = "app/pickled_prediction_models/reviews/RANDOM_FOREST_BEST_SENT_CAPS_INTER", with_scraped_reviews: bool = False):
+def predict_account(account_id: MongoObjectId, model_path: str = "app/pickled_prediction_models/accounts/RANDOM_FOREST_BEST", with_scraped_reviews: bool = False):
     dao_accounts_new: DAOAccountsNew = DAOAccountsNew()
     dao_reviews_partial: DAOReviewsPartial = DAOReviewsPartial()
 
@@ -543,16 +549,22 @@ def fit_and_get_model(train_samples: List, train_classes: List, test_samples: Li
     TP, TN, FP, FN, ALL = calculate_basic_metrics(predictions, test_classes)
     if TP + FP == 0:
         precision = 0
-        f_precision = 0
     else:
         precision = TP / (TP + FP)
+
+    if TN + FN == 0:
+        f_precision = 0
+    else:
         f_precision = TN / (TN + FN)
 
     if TP + FP + FN == 0:
         f1 = 0
-        f_f1 = 0
     else:
         f1 = (2 * TP) / (2 * TP + FP + FN)
+
+    if TN + FN + FP == 0:
+        f_f1 = 0
+    else:
         f_f1 = (2 * TN) / (2 * TN + FN + FP)
 
     try:
@@ -560,6 +572,11 @@ def fit_and_get_model(train_samples: List, train_classes: List, test_samples: Li
         f_recall = TN / (TN + FP)
     except ZeroDivisionError:
         recall = 0
+        f_recall = 0
+
+    try:
+        f_recall = TN / (TN + FP)
+    except ZeroDivisionError:
         f_recall = 0
 
     return model, precision, f1, recall, f_precision, f_f1, f_recall
@@ -604,13 +621,17 @@ def fit_and_tests_all_models(all_data, what_to_predict: str, frac=0.8):
     print("All models trained")
     return trained_models, test_samples, test_classes
 
-def train_best_from_every_available_models(data, what_to_predict: str, frac=0.7):
+def train_best_from_every_available_models(data, what_to_predict: str, frac=0.7, bare_data=False, resolve_backpack_problem=True):
+    if not bare_data:
+        file_path_add = ''
+    else:
+        file_path_add = '/bare_data'
     for available_model in AvailablePredictionModels:
         f1 = 0
         for i in range(100):
             print("#", end="")
             temp_train_samples, temp_train_classes, temp_test_samples, temp_test_classes = get_train_and_test_datasets(
-                whole_dataset=data, frac=frac, resolve_backpack_problem=True)
+                whole_dataset=data, frac=frac, resolve_backpack_problem=resolve_backpack_problem)
             temp_model, temp_precision, temp_f1, temp_recall, temp_f_precision, temp_f_f1, temp_f_recall = fit_and_get_model(temp_train_samples, temp_train_classes,
                                                                                  temp_test_samples, temp_test_classes,
                                                                                  available_model)
@@ -623,8 +644,9 @@ def train_best_from_every_available_models(data, what_to_predict: str, frac=0.7)
                 f_f1 = temp_f_f1
                 f_recall = temp_f_recall
         print("")
-        pickle.dump(model, open(f"app/pickled_prediction_models/{what_to_predict}/{available_model.name}", 'wb'))
-        with open(f"app/pickled_prediction_models/{what_to_predict}/{available_model.name}.metrics",
+
+        pickle.dump(model, open(f"app/pickled_prediction_models/{what_to_predict}{file_path_add}/{available_model.name}", 'wb'))
+        with open(f"app/pickled_prediction_models/{what_to_predict}{file_path_add}/{available_model.name}.metrics",
                   'w') as metrics_file:
             metrics_file.write(f'{precision} {f1}')
         print(f"Model {available_model.name} \n"
@@ -691,20 +713,21 @@ def cut_reviewer_id(samples: List[List]) -> List[List]:
 
 if __name__ == '__main__':
     # prepare_data_for_all_modes()
-    # get_and_prepare_accounts_data(save_to_file=True)
-    # data = get_prepared_accounts_data_from_file(ignore_empty_accounts=True)
+    # get_and_prepare_accounts_data(save_to_file=True, bare_data=True)
+    # data = get_prepared_accounts_data_from_file(ignore_empty_accounts=True, bare_data=False)
     # get_and_prepare_reviews_data(attribute_mode=AttributesModes.LESS_NLP, save_to_file=True, exclude_localization=True)
-    data = get_prepared_reviews_data_from_file(attribute_mode=AttributesModes.SENTIMENT_CAPS_INTER)  # get_prepared_accounts_data_from_file(ignore_empty_accounts=True) # get_and_prepare_accounts_data(save_to_file=True)
+    data = get_prepared_reviews_data_from_file(attribute_mode=AttributesModes.BEST)  # get_prepared_accounts_data_from_file(ignore_empty_accounts=True) # get_and_prepare_accounts_data(save_to_file=True)
         # for i in range(20):
         #     prepared_data = get_train_and_test_datasets(3/5, data, resolve_backpack_problem=True)
         #     predicts = build_model_return_predictions(prepared_data[0], prepared_data[1], prepared_data[2])
         #     TP, TN, FP, FN, ALL = calculate_basic_metrics(predicts, prepared_data[3])
         #     calculate_metrics(TP, TN, FP, FN, ALL)
-    # k_fold_validation(10, data, resolve_backpack_problem=True)
+    # for i in range(10):
+    k_fold_validation(10, data, resolve_backpack_problem=True)
     # predict_all_reviews_from_new_scrape_one_model()
     # predict_all_old_reviews()
         # print("FINISHED")
     # trained_models, test_samples, test_classes = fit_and_tests_all_models(data, frac=0.8)
     # test_vote_of_trained_models(test_samples, test_classes)
     # update_predictions_of_reviews_from_new_scrape(attribute_mode=AttributesModes.SENTIMENT_CAPS_INTER)
-    train_best_from_every_available_models(data, "reviews", frac = 0.7)
+    # train_best_from_every_available_models(data, "reviews", frac = 0.8, bare_data=False, resolve_backpack_problem=True)
