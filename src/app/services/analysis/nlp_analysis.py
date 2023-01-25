@@ -56,8 +56,9 @@ class NLPanalysis:
     def __init__(self):
         self.name_files = import_dataframes_from_names_files()
         self.sentiment_analyzer: SentimentAnalyzer = SentimentAnalyzer("reviews_sentiment.pth")
-        self.stylo_metrix = spacy.load('pl_nask_large')
-        self.stylo_metrix.add_pipe("stylo_metrix")
+        self.stylo_metrix = None # spacy.load('pl_nask_large')
+        if self.stylo_metrix is not None:
+            self.stylo_metrix.add_pipe("stylo_metrix")
 
     @classmethod
     def get_capslock_score(cls, text: str) -> float:
@@ -101,6 +102,8 @@ class NLPanalysis:
         return len(re.findall(r'[\U0001F600-\U0001F64F]', text)) * 1000 / len(text)
 
     def get_stylo_metrix_metrics(self, text: str) -> StyloMetrixResults:
+        if self.stylo_metrix is None:
+            raise Exception("StyloMetrix not loaded")
         doc = self.stylo_metrix(text)
         res = doc._.stylo_metrix_vector._dicts
         list_of_metrics = StyloMetrixResults.get_list_of_metrics()
@@ -157,4 +160,3 @@ class NLPanalysis:
 
 if __name__ == '__main__':
     nlp = NLPanalysis()
-    print(nlp.analyze_name_of_account("Kinga Tomala"))

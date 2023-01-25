@@ -29,7 +29,9 @@ class AccountOldInDB(AccountOldBase, MongoDBModel):
 
 
 class AccountNewBase(AccountBase):
+    name: Optional[str]
     is_real: Optional[bool]
+    is_deleted: Optional[bool] = False
     pass
 
 class AccountNew(AccountNewBase):

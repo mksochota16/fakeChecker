@@ -298,11 +298,11 @@ class InfoScrapeTools:
             stars_count = int(star_response.text.split('/')[0])
         return stars_count
 
-    def get_place_type(self, place_response) -> str | None:
+    def get_place_type(self, place_response) -> str:
         try:
             return place_response.find(jsaction="pane.rating.category").text.strip()
         except:
-            return None
+            return "Hotel"
 
     def find_from_complicated_html_marker(self, html_marker, context, level_of_recursion = 0):
         if isinstance(html_marker, list):

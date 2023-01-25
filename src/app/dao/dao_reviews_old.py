@@ -11,5 +11,5 @@ class DAOReviewsOld(DAOBase):
                          ReviewOld,
                          ReviewOldInDB)
 
-    def find_reviews_of_account(self, account_id: str) -> list[ReviewOldInDB]:
-        return super().find_many_by_query({'reviewer_id': account_id})
+    def find_reviews_of_account(self, reviewer_id: str) -> list[ReviewOldInDB]:
+        return super().find_many_by_query({'reviewer_id': reviewer_id})

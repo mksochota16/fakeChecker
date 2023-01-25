@@ -59,7 +59,7 @@ class ReviewPartialBase(BaseModel):
     reviewer_id: str
     place_name: str
     place_address: str
-    localization: Position
+    localization: Optional[Position]
     rating: int
     date: datetime
     content: Optional[str]

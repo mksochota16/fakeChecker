@@ -1,8 +1,10 @@
 from enum import Enum
+from typing import Optional
 
+import googlemaps
 from requests import (Response, Request, PreparedRequest, Session)
 
-from app.config import POSITIONSTACK_API_KEY, GEOAPIFY_API_KEY
+from app.config import POSITIONSTACK_API_KEY, GEOAPIFY_API_KEY, GOOGLE_API_KEY
 from app.models.http_methods import MethodsEnum
 from app.services.scraper.models.position import Position as PositionOld
 from app.models.position import Position as PositionNew
@@ -10,14 +12,37 @@ from app.models.position import Position as PositionNew
 class AvailableGeocodeAPI(str, Enum):
     POSITIONSTACK = "positionstack"
     GEOAPIFY = "geoapify"
+    GOOGLEAPI = "googleapi"
 
-def forward_geocode(address: str, limit: int = 1, new_model = False, which_api: AvailableGeocodeAPI = AvailableGeocodeAPI.GEOAPIFY) -> PositionOld | PositionNew:
-    if len(address.split(", ")) < 3:
-        address = address + ", Polska"
+PRIORITY_LIST = [AvailableGeocodeAPI.GOOGLEAPI, AvailableGeocodeAPI.GEOAPIFY, AvailableGeocodeAPI.POSITIONSTACK, ]
+
+def forward_geocode(address: str, limit: int = 1, new_model = False, which_api: Optional[AvailableGeocodeAPI] = None) -> PositionOld | PositionNew | None:
+    if address is None or address == "":
+        # some places have no address
+        return None
+    if which_api:
+        return _forward_geocode_per_api(address, limit, new_model, which_api)
+
+    for api in PRIORITY_LIST:
+        try:
+            return _forward_geocode_per_api(address, limit, new_model, api)
+        except Exception as e:
+            print(e)
+            continue
+
+
+def _forward_geocode_per_api(address: str, limit: int = 1, new_model=False,
+                    which_api: AvailableGeocodeAPI = AvailableGeocodeAPI.GOOGLEAPI) -> PositionOld | PositionNew:
+    # if len(address.split(", ")) < 3:
+    #     address = address + ", Polska"
     if which_api == AvailableGeocodeAPI.POSITIONSTACK:
         return forward_geocode_positionstack(address, limit, new_model)
     elif which_api == AvailableGeocodeAPI.GEOAPIFY:
         return forward_geocode_geoapify(address, limit, new_model)
+    elif which_api == AvailableGeocodeAPI.GOOGLEAPI:
+        return forward_geocode_google(address, new_model)
+    else:
+        raise ValueError("Wrong API name")
 
 
 
@@ -75,3 +100,14 @@ def forward_geocode_geoapify(address: str, limit: int = 1, new_model = False) ->
             return PositionNew(lat=0.0, lon=0.0)
         else:
             return PositionOld(0.0, 0.0)
+
+
+def forward_geocode_google(address: str, new_model = False) -> PositionOld | PositionNew:
+    googlemaps_client = googlemaps.Client(key=GOOGLE_API_KEY)
+    geocode_result = googlemaps_client.geocode(address)[0]["geometry"]["location"]
+    lat = geocode_result["lat"]
+    lon = geocode_result["lng"]
+    if new_model:
+        return PositionNew(lat=lat, lon=lon)
+    else:
+        return PositionOld(lat, lon)

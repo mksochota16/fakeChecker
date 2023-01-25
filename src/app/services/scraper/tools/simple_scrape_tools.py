@@ -34,7 +34,7 @@ def deEmojify(text):
     return re.sub(emoj, '', text)
 
 
-def getClassName(div):
+def get_class_name(div):
     try:
         class_names = div.attrs['class']
     except:

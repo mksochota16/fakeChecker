@@ -39,6 +39,7 @@ from app.services.analysis.AnalysisTools import get_ratings_distribution_metrics
     parse_account_to_prediction_list, parse_old_review_to_prediction_list, parse_new_review_to_prediction_list
 from app.services.predictions.prediction_constants import AttributesModes
 
+global current_classifier
 
 class AvailablePredictionModels(Enum):
     # DECISION_TREE = DecisionTreeClassifier()
@@ -66,6 +67,8 @@ def get_and_prepare_accounts_data(save_to_file=False, bare_data=False):
         reviews_of_account: List[ReviewOldInDB] = dao_reviews_old.find_reviews_of_account(account.reviewer_id)
 
         account_data: List = parse_account_to_prediction_list(account=account, reviews_of_account=reviews_of_account, bare_data=bare_data)
+        if account.number_of_reviews == 0:
+            continue
         prepared_data.append(account_data)
         if account.fake_service != "real":
             classes.append(True)
@@ -80,7 +83,7 @@ def get_and_prepare_accounts_data(save_to_file=False, bare_data=False):
     print("\n")
     if save_to_file:
         if not bare_data:
-            file_path = 'app/data/formatted_accounts_data.csv'
+            file_path = 'app/data/formatted_accounts_no_count_data.csv'
         else:
             file_path = 'app/data/formatted_accounts_data_bare.csv'
         with open(file_path, mode='w') as f:
@@ -138,7 +141,7 @@ def get_and_prepare_reviews_data(attribute_mode: AttributesModes,save_to_file=Fa
 
 def get_prepared_accounts_data_from_file(ignore_empty_accounts=False, bare_data = False):
     if not bare_data:
-        file_path = 'app/data/formatted_accounts_data.csv'
+        file_path = 'app/data/formatted_accounts_no_count_data.csv' # app/data/formatted_accounts_data.csv'
     else:
         file_path = 'app/data/formatted_accounts_data_bare.csv'
     samples, classes = get_prepared_data_from_file(file_path, ignore_empty_accounts=ignore_empty_accounts)
@@ -343,9 +346,14 @@ def separate_data_by_accounts_and_genuineness(classes, frac, samples):
 
 
 def build_model_return_predictions(train_samples, train_classes, test_samples):
-    decision_tree = RandomForestClassifier(n_estimators=100)# tree.DecisionTreeClassifier()
-    decision_tree = decision_tree.fit(train_samples, train_classes)
-    return decision_tree.predict(test_samples), decision_tree
+    global current_classifier
+    if current_classifier is None:
+        decision_tree = RandomForestClassifier(n_estimators=100)# tree.DecisionTreeClassifier()
+        decision_tree = decision_tree.fit(train_samples, train_classes)
+        return decision_tree.predict(test_samples), decision_tree
+    else:
+        current_classifier = current_classifier.fit(train_samples, train_classes)
+        return current_classifier.predict(test_samples), current_classifier
 
 
 def calculate_basic_metrics(predictions, test_classes):
@@ -492,14 +500,20 @@ def predict_account(account_id: MongoObjectId, model_path: str = "app/pickled_pr
     dao_reviews_partial: DAOReviewsPartial = DAOReviewsPartial()
 
     account: AccountNewInDB = dao_accounts_new.find_by_id(account_id)
-    if account.is_private:
+    if account.is_private or (account.is_deleted is not None and account.is_deleted):
         raise AccountIsPrivateException()
     reviews_of_account: List[ReviewPartialInDB] = dao_reviews_partial.find_reviews_of_account(account.reviewer_id)
     model = pickle.load(open(model_path, 'rb'))
     if with_scraped_reviews:
         raise NotImplementedError
     else:
-        prediction = model.predict([parse_account_to_prediction_list(account=account, reviews_of_account=reviews_of_account, with_scraped_reviews=False)])
+        account_info_list = [parse_account_to_prediction_list(account=account, reviews_of_account=reviews_of_account, with_scraped_reviews=False)]
+        if None in account_info_list:
+            return
+        try:
+            prediction = model.predict(account_info_list)
+        except ValueError:
+            return
         dao_accounts_new.update_one({"_id": account.id}, {"$set": {"is_real": not prediction[0]}})
     print("Account prediction updated")
     return prediction[0]
@@ -723,11 +737,16 @@ if __name__ == '__main__':
         #     TP, TN, FP, FN, ALL = calculate_basic_metrics(predicts, prepared_data[3])
         #     calculate_metrics(TP, TN, FP, FN, ALL)
     # for i in range(10):
-    k_fold_validation(10, data, resolve_backpack_problem=True)
+    # global current_classifier
+    # for classifier in AvailablePredictionModels:
+    #     current_classifier = classifier.value
+    #     print(f"Classifier: {classifier.name}")
+    #     k_fold_validation(10, data, resolve_backpack_problem=True)
+
     # predict_all_reviews_from_new_scrape_one_model()
     # predict_all_old_reviews()
         # print("FINISHED")
     # trained_models, test_samples, test_classes = fit_and_tests_all_models(data, frac=0.8)
     # test_vote_of_trained_models(test_samples, test_classes)
     # update_predictions_of_reviews_from_new_scrape(attribute_mode=AttributesModes.SENTIMENT_CAPS_INTER)
-    # train_best_from_every_available_models(data, "reviews", frac = 0.8, bare_data=False, resolve_backpack_problem=True)
+    train_best_from_every_available_models(data, "reviews", frac = 0.8, bare_data=False, resolve_backpack_problem=True)

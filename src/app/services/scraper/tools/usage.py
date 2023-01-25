@@ -50,7 +50,7 @@ class ScraperUsage:
         place_rating: float = float(
             response.find(class_=self.html_markers_dict['place_rating']).contents[0].text.replace(',', '.'))
         place_url: str = self.driver.current_url
-        type_of_object: str | None = self.info_scrape_tools.get_place_type(response)
+        type_of_object: str = self.info_scrape_tools.get_place_type(response)
         place_cluster: CLUSTER_TYPES = STH2VEC.classify_type_of_object(type_of_object)
 
         dao_places: DAOPlaces = DAOPlaces()
@@ -149,7 +149,9 @@ class ScraperUsage:
 
         return place_id, misread_reviews
 
-    def collect_data_from_person(self, url: str, max_scroll_seconds: int = 5) -> Tuple[MongoObjectId,int]:
+    def collect_data_from_person(self, url: str, max_scroll_seconds: int = 5, reviewer_id: Optional[str] = None) -> Tuple[MongoObjectId,int]:
+        if reviewer_id is not None:
+            url = f"https://www.google.com/maps/contrib/{reviewer_id}/reviews"
         dao_accounts_new: DAOAccountsNew = DAOAccountsNew()
         self.simple_scrape_tools.start_scraping(url)
         self.info_scrape_tools.wait_for_person_to_load()
@@ -157,11 +159,29 @@ class ScraperUsage:
         reviewer_url = self.driver.current_url
         reviewer_id = reviewer_url.split('/')[5]
 
-        name = response.find(class_=re.compile(self.html_markers_dict['reviewer_name'])).text
-        local_guide_info = response.find(class_=re.compile(self.html_markers_dict['reviewer_guide_level'])).text.split()
-        if len(local_guide_info) > 3:  # then he is a local guide
-            local_guide_level = int(local_guide_info[4])
-        else:  # he is not a local guide
+        try:
+            name = response.find(class_=re.compile(self.html_markers_dict['reviewer_name'])).text
+        except AttributeError:
+            account_to_create: AccountNew = AccountNew(
+                name=None,
+                reviewer_url=reviewer_url,
+                reviewer_id=reviewer_id,
+                local_guide_level=None,
+                number_of_reviews=None,
+                is_private=False,
+                is_deleted=True
+            )
+
+            account_id: MongoObjectId = dao_accounts_new.insert_one(account_to_create)
+            return account_id
+        try:
+            local_guide_info = response.find(class_=re.compile(self.html_markers_dict['reviewer_guide_level'])).text.split()
+            if len(local_guide_info) > 3:  # then he is a local guide
+                local_guide_level = int(local_guide_info[4])
+            else:  # he is not a local guide
+                local_guide_level = 0
+        except AttributeError:
+            # he is not a local guide
             local_guide_level = 0
 
         if self.info_scrape_tools.is_private_account(response):
@@ -200,7 +220,7 @@ class ScraperUsage:
                     self.html_markers_dict['reviewer_review_label'], reviewer_section).text.strip()
                 place_address: str = self.info_scrape_tools.find_using_html_marker(
                     self.html_markers_dict['place_reviewer_local_guide_and_reviews'], reviewer_section).text.strip()[:-2]
-                place_localization: PositionNew = geocode_api.forward_geocode(place_address, new_model=True)
+                place_localization: Optional[PositionNew] = geocode_api.forward_geocode(place_address, new_model=True)
 
                 rating: str = self.info_scrape_tools.find_using_html_marker(
                     self.html_markers_dict['all_reviewer_stars'], reviewer_section).attrs['aria-label'].strip().split(" ")[0]
@@ -252,6 +272,22 @@ class ScraperUsage:
                 misread_reviews += 1
 
         return account_id, misread_reviews
+
+
+    def check_if_account_is_deleted(self, url: str, reviewer_id: Optional[str] = None) -> str:
+        if reviewer_id is not None:
+            url = f"https://www.google.com/maps/contrib/{reviewer_id}/reviews"
+        self.simple_scrape_tools.start_scraping(url)
+        self.info_scrape_tools.wait_for_person_to_load()
+        response = BeautifulSoup(self.driver.page_source, 'html.parser')
+
+        try:
+            name = response.find(class_=re.compile(self.html_markers_dict['reviewer_name'])).text
+        except AttributeError:
+            return 'deleted'
+        if self.info_scrape_tools.is_private_account(response):
+            return 'private'
+        return 'public'
 
     def discover_new_markers(self):
         self.html_markers.discoverNewMarkers()

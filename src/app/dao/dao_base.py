@@ -36,12 +36,18 @@ class DAOBase:
         result: dict = self.collection.find_one(query)
         return self.model_in_db(**result)
 
+    def find_one_by_query_return_raw(self, query: dict) -> dict:
+        result: dict = self.collection.find_one(query)
+        return result
+
     def find_many_by_query(self, query: dict) -> List[BaseModel]:
         result: MongoCursor = self.collection.find(query)
         return [self.model_in_db(**doc) for doc in list(result)]
 
-    def insert_one(self, obj: BaseModel) -> ObjectId:
-        result: ObjectId = self.collection.insert_one(obj.dict()).inserted_id
+    def insert_one(self, obj: BaseModel| dict) -> ObjectId:
+        if isinstance(obj, BaseModel):
+            obj = obj.dict()
+        result: ObjectId = self.collection.insert_one(obj).inserted_id
         return result
 
     def insert_many(self, obj_list: List[BaseModel]) -> List[ObjectId]:
@@ -49,8 +55,10 @@ class DAOBase:
         result: List[ObjectId] = self.collection.insert_many(dict_list).inserted_ids
         return result
 
-    def replace_one(self, field_name: str, value: any, obj: BaseModel) -> bool:
-        return self.collection.replace_one({field_name:value}, obj.dict()).acknowledged
+    def replace_one(self, field_name: str, value: any, obj: BaseModel|dict) -> bool:
+        if isinstance(obj, BaseModel):
+            obj = obj.dict()
+        return self.collection.replace_one({field_name:value}, obj).acknowledged
 
     def update_one(self, query: dict, values: dict) -> int:
         return self.collection.update_one(query, values).matched_count

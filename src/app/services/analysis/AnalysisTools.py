@@ -78,7 +78,7 @@ def get_geolocation_distribution_metrics(account_id, reviews_of_account: Optiona
     if reviews_of_account is None:
         dao_reviews_old: DAOReviewsOld = DAOReviewsOld()
         reviews_of_account: List[ReviewOldInDB] = dao_reviews_old.find_reviews_of_account(account_id)
-    pos_list: List[Position] = [review.localization for review in reviews_of_account if not (review.localization.lon == 0.0 and review.localization.lat == 0.0)]
+    pos_list: List[Position] = [review.localization for review in reviews_of_account if ((review.localization is not None) and review.localization.lon != 0.0 and review.localization.lat != 0.0)]
 
     kmeans_algorithm = calculateNMeans(pos_list)
     distances_to_centroids = get_distances_to_centroids(kmeans_algorithm, pos_list, if_round=False)
@@ -147,8 +147,8 @@ def get_distances_to_centroids(kmeans_algorithm_result, position_list, if_round=
         for index in cluster:
             temp_position = position_list[index]
             distance = geolocation.distance(temp_position, kmeans_algorithm_result[1][n])
-            if if_round and distance > 199:
-                distance = 199
+            if if_round and distance > 400:
+                distance = 400
             distances_to_centroids.append(distance)
     return distances_to_centroids
 
@@ -176,6 +176,9 @@ def calculateNMeans(position_list):
     sample = []
     for position in position_list:
         sample.append([position.lat, position.lon])
+
+    if len(sample) == 0:
+        return [[], []]
     kmeans_instance = kmeans(sample, start_centers, metric=metric, tolerance=0.000001)
 
     # run cluster analysis and obtain results
@@ -283,7 +286,7 @@ def _parse_account_data_to_prediction_list(account: AccountBase,
     # account_data.append(is_private)
      #account_data.append(is_probably_deleted)
 
-    if number_of_reviews == 0:
+    if len(reviews_of_account) == 0:
         account_data.append(0)
         account_data.append(0)
         account_data.append(0)
@@ -296,7 +299,7 @@ def _parse_account_data_to_prediction_list(account: AccountBase,
         account_data.append(ratings_median)
         account_data.append(ratings_variance)
 
-    if number_of_reviews == 0:
+    if len(reviews_of_account) == 0:
         account_data.append(0)
         account_data.append(0)
         account_data.append(0)
@@ -309,13 +312,13 @@ def _parse_account_data_to_prediction_list(account: AccountBase,
         account_data.append(geolocation_median)
         account_data.append(geolocation_variance)
 
-    if number_of_reviews == 0:
+    if len(reviews_of_account) == 0:
         account_data.append(0)
     else:
         photo_reviews_percentage = get_percentage_of_photographed_reviews(account.reviewer_id, reviews_of_account)
         account_data.append(photo_reviews_percentage)
 
-    if number_of_reviews == 0:
+    if len(reviews_of_account) == 0:
         account_data.append(0)
     else:
         responded_reviews_percentage = get_percentage_of_responded_reviews(account.reviewer_id, reviews_of_account)
@@ -394,7 +397,7 @@ def _parse_account_data_to_prediction_list_bare(account: AccountBase,
     # account_data.append(is_private)
     # account_data.append(is_probably_deleted)
 
-    if number_of_reviews == 0:
+    if len(reviews_of_account) == 0:
         account_data.append(0)
         account_data.append(0)
         account_data.append(0)
@@ -407,13 +410,13 @@ def _parse_account_data_to_prediction_list_bare(account: AccountBase,
         account_data.append(ratings_median)
         account_data.append(ratings_variance)
 
-    if number_of_reviews == 0:
+    if len(reviews_of_account) == 0:
         account_data.append(0)
     else:
         photo_reviews_percentage = get_percentage_of_photographed_reviews(account.reviewer_id, reviews_of_account)
         account_data.append(photo_reviews_percentage)
 
-    if number_of_reviews == 0:
+    if len(reviews_of_account) == 0:
         account_data.append(0)
     else:
         responded_reviews_percentage = get_percentage_of_responded_reviews(account.reviewer_id, reviews_of_account)

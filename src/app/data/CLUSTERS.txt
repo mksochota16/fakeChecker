@@ -138,14 +138,10 @@ Konsultant ds. zdrowia
 Zdjęcia stomatologiczne
 =============== SERIWSY I NAPRAWY ==================
 Serwis sprzętu AGD
-Warsztat tuningu samochodów
-Serwis samochodów ciężarowych
 Naprawa telefonów
-Serwis motocykli
 Naprawa sprzętu elektronicznego
 Naprawa urządzeń AGD
 Naprawa i serwis komputerów
-Serwis silników Diesla
 Serwis sprzętu fotograficznego
 Naprawa sprzętu RTV
 Naprawa pieców
@@ -155,7 +151,13 @@ Serwis komputerów
 Naprawa lamp
 Naprawa sprzętu biurowego
 Serwis komputerowy
+Mechanik samochodowy
 Naprawa rowerów
+Warsztat tuningu samochodów
+Serwis samochodów ciężarowych
+Serwis silników Diesla
+Serwis motocykli
+Warsztat samochodowy
 =============== MIEJSCA I INSTYTUCJE PUBLICZNE i PAŃSTWOWE ==================
 Organizacja pozarządowa
 Stowarzyszenie inżynierów przemysłowych
@@ -570,14 +572,6 @@ Wydawca
 Opakowania
 =============== GASTRONOMIA ==================
 Bar i grill
-Bar i grill
-Bistro
-Bistro
-Bistro
-Bistro
-Bistro
-Bistro
-Bistro
 Bistro
 Bar serwujący dania z makaronem
 Grill
@@ -705,11 +699,9 @@ Czyszczenie tapicerki
 Złomowanie samochodów
 Komis
 Salon samochodowy
-Mechanik samochodowy
 Tapicer samochodowy
 Sklep samochodowy
 Komis samochodowy
-Warsztat samochodowy
 Elektryk samochodowy
 Blacharstwo samochodowe
 Tłumiki

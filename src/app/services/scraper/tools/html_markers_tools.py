@@ -59,14 +59,14 @@ class HTMLMarkers:
         for div in content:
             try:
                 if div.text == 'Paweł Gryka':
-                    name_dict['reviewer_name'] = simple_scrape_tools.getClassName(div)
+                    name_dict['reviewer_name'] = simple_scrape_tools.get_class_name(div)
                 elif div.text.split(" przewodnik")[0] == 'Lokalny':
-                    name_dict['reviewer_guide_level'] = simple_scrape_tools.getClassName(div)
+                    name_dict['reviewer_guide_level'] = simple_scrape_tools.get_class_name(div)
                 elif div.text.split()[1] == 'opinia' or div.text.split()[1] == 'opinie' or div.text.split()[
                     1] == 'opinii' or div.text.split()[2] == 'opinie' or div.text.split()[2] == 'opinii':
-                    name_dict['reviewer_number_of_reviews'] = simple_scrape_tools.getClassName(div)
+                    name_dict['reviewer_number_of_reviews'] = simple_scrape_tools.get_class_name(div)
                 elif div.text == "Fair Winds - kursy src, RYA, nawigacji morskiej":
-                    name_dict['reviewer_review_label'] = simple_scrape_tools.getClassName(div)
+                    name_dict['reviewer_review_label'] = simple_scrape_tools.get_class_name(div)
                     self.simpleScrapeTools.scroll_down(1)
                     time.sleep(2)
                     # click on the review
@@ -78,7 +78,7 @@ class HTMLMarkers:
                     for button in buttons:
                         try:
                             if button.text == 'Szczegóły miejsca':
-                                name_dict['trans_more_info_button'] = simple_scrape_tools.getClassName(button)
+                                name_dict['trans_more_info_button'] = simple_scrape_tools.get_class_name(button)
                                 self.simpleScrapeTools.wait_for_element_and_click(By.XPATH,
                                                                             f"//button[contains(@class,'{name_dict['trans_more_info_button']}')]",
                                                                                   0)
@@ -90,19 +90,19 @@ class HTMLMarkers:
                                     try:
                                         if info.text == 'Szkoła żeglarstwa' and not got_parameters:
                                             name_dict['place_description'] = [
-                                                simple_scrape_tools.getClassName(info.parent.parent),
-                                                simple_scrape_tools.getClassName(info.parent),
-                                                simple_scrape_tools.getClassName(info)]
+                                                simple_scrape_tools.get_class_name(info.parent.parent),
+                                                simple_scrape_tools.get_class_name(info.parent),
+                                                simple_scrape_tools.get_class_name(info)]
                                             got_parameters = True
                                         elif info.attrs['jsaction'] == 'pane.rating.moreReviews':
-                                            name_dict['place_number_of_reviews'] = simple_scrape_tools.getClassName(info.parent)
-                                            name_dict['place_rating'] = simple_scrape_tools.getClassName(info)
+                                            name_dict['place_number_of_reviews'] = simple_scrape_tools.get_class_name(info.parent)
+                                            name_dict['place_rating'] = simple_scrape_tools.get_class_name(info)
                                         elif 'Fair Winds - kursy src, RYA, nawigacji morskiej' in info.text:
                                             for sub_div in info.find_all():
                                                 if sub_div.text == 'Fair Winds - kursy src, RYA, nawigacji morskiej':
-                                                    name_dict['place_name'] = simple_scrape_tools.getClassName(sub_div)
+                                                    name_dict['place_name'] = simple_scrape_tools.get_class_name(sub_div)
                                         elif 'Puławska 12/3, 02-740 Warszawa' in info.text:
-                                            name_dict['place_address'] = simple_scrape_tools.getClassName(info)
+                                            name_dict['place_address'] = simple_scrape_tools.get_class_name(info)
                                     except:
                                         pass
                                 self.infoScrapeTools.click_on_more_reviews()
@@ -119,37 +119,37 @@ class HTMLMarkers:
                                 for info in place_reviews:
                                     try:
                                         if info.text == 'Paweł Gryka':
-                                            name_dict['place_reviewer_name'] = simple_scrape_tools.getClassName(info)
-                                            name_dict['place_reviewer_local_guide_and_reviews'] = simple_scrape_tools.getClassName(
+                                            name_dict['place_reviewer_name'] = simple_scrape_tools.get_class_name(info)
+                                            name_dict['place_reviewer_local_guide_and_reviews'] = simple_scrape_tools.get_class_name(
                                                 info.parent.parent.contents[3])
                                             reviewer_section = info.parent.parent.parent.parent.parent.parent.parent.parent
-                                            name_dict['place_single_reviewer_section'] = simple_scrape_tools.getClassName(
+                                            name_dict['place_single_reviewer_section'] = simple_scrape_tools.get_class_name(
                                                 reviewer_section)
                                             name_dict[
-                                                'scrollable_div'] = simple_scrape_tools.getClassName(
+                                                'scrollable_div'] = simple_scrape_tools.get_class_name(
                                                 reviewer_section.parent.parent)
-                                            name_dict['place_reviewer_url'] = simple_scrape_tools.getClassName(reviewer_section.contents[1].contents[5].contents[1].contents[1])
-                                            name_dict['place_reviewer_png'] = simple_scrape_tools.getClassName(reviewer_section.contents[1].contents[5].contents[1].contents[1].contents[1])
+                                            name_dict['place_reviewer_url'] = simple_scrape_tools.get_class_name(reviewer_section.contents[1].contents[5].contents[1].contents[1])
+                                            name_dict['place_reviewer_png'] = simple_scrape_tools.get_class_name(reviewer_section.contents[1].contents[5].contents[1].contents[1].contents[1])
                                         elif info.attrs['aria-label'] == ' 5 gwiazdek ':
-                                            name_dict['all_reviewer_stars'] = simple_scrape_tools.getClassName(info)
+                                            name_dict['all_reviewer_stars'] = simple_scrape_tools.get_class_name(info)
                                         elif "Pełna profeska, Anna która prowadziła ten kurs to przemiła kobieta, cierpliwa i chętna do odpowiedzi na każde pytanie. Polecam" in info.text and not has_content_info:
                                             children = info.find_all()
                                             for child in children:
                                                 if child.text == "Pełna profeska, Anna która prowadziła ten kurs to przemiła kobieta, cierpliwa i chętna do odpowiedzi na każde pytanie. Polecam":
                                                     name_dict['place_reviewer_content'] = [
-                                                        simple_scrape_tools.getClassName(child.parent),
-                                                        simple_scrape_tools.getClassName(child)]
-                                                    name_dict['place_reviewer_contents'] = simple_scrape_tools.getClassName(
+                                                        simple_scrape_tools.get_class_name(child.parent),
+                                                        simple_scrape_tools.get_class_name(child)]
+                                                    name_dict['place_reviewer_contents'] = simple_scrape_tools.get_class_name(
                                                         child.parent)
                                                     has_content_info = True
                                                     break
                                         elif info.attrs['data-review-id'] == 'ChZDSUhNMG9nS0VJQ0FnSURpNEwya093EAE':
-                                            name_dict['place_reviewer_review_id'] = simple_scrape_tools.getClassName(info)
+                                            name_dict['place_reviewer_review_id'] = simple_scrape_tools.get_class_name(info)
                                         elif 'temu' in info.text and not has_date_info:
                                             children = info.find_all()
                                             for child in children:
                                                 if 'temu' in child.text and len(child.text) < 25:
-                                                    name_dict['place_reviewer_date'] = simple_scrape_tools.getClassName(child)
+                                                    name_dict['place_reviewer_date'] = simple_scrape_tools.get_class_name(child)
                                                     has_date_info = True
                                                     break
 
@@ -158,15 +158,15 @@ class HTMLMarkers:
                                             for child in children:
                                                 if child.text == 'Pozdrawiamy i dziękujemy!':
                                                     name_dict['place_reviewer_response_content'] = [
-                                                        simple_scrape_tools.getClassName(child.parent.parent.parent),
-                                                        simple_scrape_tools.getClassName(child.parent.parent),
-                                                        simple_scrape_tools.getClassName(child.parent),
-                                                        simple_scrape_tools.getClassName(child)]
+                                                        simple_scrape_tools.get_class_name(child.parent.parent.parent),
+                                                        simple_scrape_tools.get_class_name(child.parent.parent),
+                                                        simple_scrape_tools.get_class_name(child.parent),
+                                                        simple_scrape_tools.get_class_name(child)]
                                                     has_content_response = True
                                                     break
                                         elif '118323224570864445260' in info.attrs['href']:
-                                            name_dict['place_reviewer_reviewer_id'] = simple_scrape_tools.getClassName(info)
-                                            name_dict['place_reviewer_img'] = simple_scrape_tools.getClassName(
+                                            name_dict['place_reviewer_reviewer_id'] = simple_scrape_tools.get_class_name(info)
+                                            name_dict['place_reviewer_img'] = simple_scrape_tools.get_class_name(
                                                 info.child)
 
                                     except:
@@ -180,29 +180,29 @@ class HTMLMarkers:
                 if 'Ładne ale ważna jest dobra pogoda' in div.text and 'reviewer_reviews_content' not in name_dict:
                     for sub_div in div.find_all():
                         if sub_div.text == 'Ładne ale ważna jest dobra pogoda':
-                            name_dict['reviewer_reviews_content'] = simple_scrape_tools.getClassName(sub_div.parent)
-                            name_dict['reviewer_review_id_child'] = simple_scrape_tools.getClassName(
+                            name_dict['reviewer_reviews_content'] = simple_scrape_tools.get_class_name(sub_div.parent)
+                            name_dict['reviewer_review_id_child'] = simple_scrape_tools.get_class_name(
                                 sub_div.parent.parent.parent)
                             break
                 if '(Przetłumaczone przez Google) Super Paweł dziękuję bardzo' in div.text and 'reviewer_reviews_response_content' not in name_dict:
                     for sub_div in div.find_all():
                         if sub_div.text == '(Przetłumaczone przez Google) Super Paweł dziękuję bardzo\n\n(Wersja oryginalna)\nSuper Pawel thankyou so much':
                             name_dict['reviewer_reviews_response_content'] = [
-                                simple_scrape_tools.getClassName(sub_div.parent.parent.parent),
-                                simple_scrape_tools.getClassName(sub_div.parent),
-                                simple_scrape_tools.getClassName(sub_div)]
+                                simple_scrape_tools.get_class_name(sub_div.parent.parent.parent),
+                                simple_scrape_tools.get_class_name(sub_div.parent),
+                                simple_scrape_tools.get_class_name(sub_div)]
                             break
                 if 'Puławska 12/3, 02-740 Warszawa' in div.text and len(div.text) < 100 and 'reviewer_review_location' not in name_dict:
                     for sub_div in div.find_all():
                         if sub_div.text == 'Puławska 12/3, 02-740 Warszawa':
-                            name_dict['reviewer_review_location'] = simple_scrape_tools.getClassName(sub_div.parent)
+                            name_dict['reviewer_review_location'] = simple_scrape_tools.get_class_name(sub_div.parent)
                             break
-                    name_dict['reviewer_review_location'] = simple_scrape_tools.getClassName(div)
+                    name_dict['reviewer_review_location'] = simple_scrape_tools.get_class_name(div)
                 for number in range(2, 4):
                     if f'{number} lata temu' in div.text and 'reviewer_review_relative_date' not in name_dict:
                         for sub_div in div.find_all():
                             if sub_div.text == f'{number} lata temu':
-                                name_dict['reviewer_review_relative_date'] = simple_scrape_tools.getClassName(sub_div)
+                                name_dict['reviewer_review_relative_date'] = simple_scrape_tools.get_class_name(sub_div)
                                 break
                     if 'reviewer_review_relative_date' in name_dict:
                         break
@@ -236,7 +236,7 @@ class HTMLMarkers:
         content = response.find_all()
         for div in content:
             if div.text == "Ten użytkownik nie napisał jeszcze żadnej opinii lub nie chce jej wyświetlać.":
-                name_dict['reviewer_private_label'] = simple_scrape_tools.getClassName(div)
+                name_dict['reviewer_private_label'] = simple_scrape_tools.get_class_name(div)
         io_files_handler.save_new_html_markers(name_dict)
         self.html_markers_dict = io_files_handler.get_saved_html_markers()
 
@@ -250,7 +250,7 @@ class HTMLMarkers:
         content = response.find_all()
         for div in content:
             if div.text == "5/5" and 'hotel_rating_label' not in name_dict:
-                name_dict['hotel_rating_label'] = simple_scrape_tools.getClassName(div)
+                name_dict['hotel_rating_label'] = simple_scrape_tools.get_class_name(div)
                 break
         io_files_handler.save_new_html_markers(name_dict)
         self.html_markers_dict = io_files_handler.get_saved_html_markers()
@@ -269,8 +269,8 @@ class HTMLMarkers:
             try:
                 jsaction = div.attrs['jsaction']
                 if 'pane.review.openPhoto' in jsaction and 'reviewer_review_photo_url' not in name_dict:
-                    name_dict['reviewer_review_photo'] = simple_scrape_tools.getClassName(div)
-                    name_dict['reviewer_review_photo_section'] = simple_scrape_tools.getClassName(div.parent)
+                    name_dict['reviewer_review_photo'] = simple_scrape_tools.get_class_name(div)
+                    name_dict['reviewer_review_photo_section'] = simple_scrape_tools.get_class_name(div.parent)
                     break
             except KeyError:
                 pass
@@ -285,7 +285,7 @@ class HTMLMarkers:
         content = response.find_all()
         for div in content:
             if div.text == "Naprawa telefonów komórkowych" and 'search_result_marker_0' not in name_dict:
-                name_dict['search_result_marker_0'] = simple_scrape_tools.getClassName(div.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent)
+                name_dict['search_result_marker_0'] = simple_scrape_tools.get_class_name(div.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent)
                 break
 
         self.simpleScrapeTools.start_scraping(
@@ -297,7 +297,7 @@ class HTMLMarkers:
         content = response.find_all()
         for div in content:
             if div.text == "Restauracja" and 'search_result_marker_1' not in name_dict:
-                name_dict['search_result_marker_1'] = simple_scrape_tools.getClassName(
+                name_dict['search_result_marker_1'] = simple_scrape_tools.get_class_name(
                     div.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent)
                 break
 
@@ -319,8 +319,8 @@ class HTMLMarkers:
                 try:
                     jsaction = div.attrs['jsaction']
                     if 'openPhoto' in jsaction:
-                        name_dict['place_reviewer_photo'] = simple_scrape_tools.getClassName(div)
-                        name_dict['place_reviewer_photo_section'] = simple_scrape_tools.getClassName(div.parent)
+                        name_dict['place_reviewer_photo'] = simple_scrape_tools.get_class_name(div)
+                        name_dict['place_reviewer_photo_section'] = simple_scrape_tools.get_class_name(div.parent)
                         marker_found_flag = True
                         break
                 except KeyError:

@@ -13,7 +13,7 @@ class PlaceBase(BaseModel):
     url: str
     address: str
     number_of_reviews: int
-    localization: Position
+    localization: Optional[Position]
     rating: float
     type_of_object: str
     cluster: Optional[CLUSTER_TYPES]

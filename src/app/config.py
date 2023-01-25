@@ -3,12 +3,18 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 
 from app.services.analysis.nlp_analysis import NLPanalysis
-from app.services.analysis.sentiment import SentimentAnalyzer
 from app.services.analysis.sth2vec import Sth2Vec
+
+import warnings
+
+warnings.filterwarnings("ignore")
 
 load_dotenv()
 POSITIONSTACK_API_KEY = os.getenv("POSITIONSTACK_GEOCODE_API_KEY")
 GEOAPIFY_API_KEY = os.getenv("GEOAPIFY_GEOCODE_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_GEOCODE_API_KEY")
+
+ADMIN_API_KEY = os.getenv("ADMIN_API_KEY")
 
 
 MONGODB_URI = os.getenv("MONGODB_URI")
@@ -38,5 +44,5 @@ ENGLISH_TRANSLATION_CLUSTER_DICT ={
             "INNE": "Other"
         }
 
-STH2VEC: Sth2Vec = Sth2Vec(english_translation_dict=ENGLISH_TRANSLATION_CLUSTER_DICT)
-NLP: NLPanalysis = NLPanalysis()
+STH2VEC: Sth2Vec = None # Sth2Vec(english_translation_dict=ENGLISH_TRANSLATION_CLUSTER_DICT)
+NLP: NLPanalysis = None # NLPanalysis()
