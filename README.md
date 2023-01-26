@@ -9,11 +9,17 @@
   - [Google Maps geocode API](https://developers.google.com/maps/documentation/geocoding/overview)
   - [positionstack](https://positionstack.com/)
   - [Geoapify](https://www.geoapify.com/geocoding-api)
+- Downloaded Word2Vec model, Gensim word2vec_800_3_polish: 
+  - [Git repository of authors](https://github.com/sdadas/polish-nlp-resources#word2vec)
+  - [Direct link to the specific Word2Vec model](https://witedupl-my.sharepoint.com/personal/dadass_wit_edu_pl/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fdadass%5Fwit%5Fedu%5Fpl%2FDocuments%2FModels%2Fword2vec%2Fword2vec%5F800%5F3%2E7z&parent=%2Fpersonal%2Fdadass%5Fwit%5Fedu%5Fpl%2FDocuments%2FModels%2Fword2vec&ga=1)
 - `.env` file with at least one Geocode API key, template below:
 ```
 POSITIONSTACK_GEOCODE_API_KEY=""
 GEOAPIFY_GEOCODE_API_KEY=""
 GOOGLE_GEOCODE_API_KEY=""
+# At least one API_key has to be provided
+
+GENSIM_WORD2VEC_MODEL_PATH=""
 
 ADMIN_API_KEY="<SECRET OF OUR CHOICE>"
 
