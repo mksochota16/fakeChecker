@@ -1,3 +1,10 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+GENSIM_WORD2VEC_MODEL_PATH = os.getenv("GENSIM_WORD2VEC_MODEL_PATH")
+FASTTEXT_WORD2VEC_MODEL_PATH = os.getenv("FASTTEXT_WORD2VEC_MODEL_PATH")
+
 from gensim.models import KeyedVectors
 from numpy import unique
 from numpy import where
@@ -8,8 +15,6 @@ import fasttext
 
 from app.models.types_cluster import CLUSTER_TYPES
 from app.services.scraper.tools import io_files_handler
-from app.config import GENSIM_WORD2VEC_MODEL_PATH, FASTTEXT_WORD2VEC_MODEL_PATH
-
 
 def make_clusters_of_data(data, info_dict, number_of_clusters, algorithm=None):
     X = data
@@ -148,7 +153,7 @@ class Sth2Vec:
             for word in sentence:
                 try:
                     values.append(self.word2vec.wv[word])  # , len(word)])
-                except:
+                except Exception as e:
                     values.append(np.zeros(800))
             # vector_weighted_sum = sum(x[0] * x[1] for x in values)
             # weight_sum = sum(x[1] for x in values)

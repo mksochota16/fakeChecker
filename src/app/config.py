@@ -16,10 +16,6 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_GEOCODE_API_KEY")
 
 ADMIN_API_KEY = os.getenv("ADMIN_API_KEY")
 
-GENSIM_WORD2VEC_MODEL_PATH = os.getenv("GENSIM_WORD2VEC_MODEL_PATH")
-FASTTEXT_WORD2VEC_MODEL_PATH = os.getenv("FASTTEXT_WORD2VEC_MODEL_PATH")
-
-
 MONGODB_URI = os.getenv("MONGODB_URI")
 MONGODB_PORT = int(os.getenv("MONGODB_PORT"))
 MONGODB_OLD_DB_NAME= os.getenv("MONGODB_OLD_DB_NAME")
@@ -49,3 +45,6 @@ ENGLISH_TRANSLATION_CLUSTER_DICT ={
 
 STH2VEC: Sth2Vec = Sth2Vec(english_translation_dict=ENGLISH_TRANSLATION_CLUSTER_DICT)
 NLP: NLPanalysis = NLPanalysis()
+
+if __name__ == '__main__':
+    print(STH2VEC.get_vector_of_sentence('Moja piękna dziewczyna jest super'))
