@@ -8,6 +8,7 @@ import fasttext
 
 from app.models.types_cluster import CLUSTER_TYPES
 from app.services.scraper.tools import io_files_handler
+from app.config import GENSIM_WORD2VEC_MODEL_PATH, FASTTEXT_WORD2VEC_MODEL_PATH
 
 
 def make_clusters_of_data(data, info_dict, number_of_clusters, algorithm=None):
@@ -89,9 +90,9 @@ class Sth2Vec:
         self.model_provider = model_provider
         if self.model_provider == 'gensim':
             self.word2vec = KeyedVectors.load(
-                "D:/Dev/Word2Vec/word2vec_800_3/word2vec_800_3_polish.bin")  # ("word2vec/word2vec_100_3_polish.bin")
+                GENSIM_WORD2VEC_MODEL_PATH)  # ("word2vec/word2vec_100_3_polish.bin")
         elif self.model_provider == 'fasttext':
-            self.fasttext_model = fasttext.load_model("D:/Dev/Word2Vec/cc.pl.300.bin/cc.pl.300.bin")
+            self.fasttext_model = fasttext.load_model(FASTTEXT_WORD2VEC_MODEL_PATH)
         self.english_translation_dict = english_translation_dict
         print("Initialized Sth2Vec Module")
 
