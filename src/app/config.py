@@ -45,6 +45,3 @@ ENGLISH_TRANSLATION_CLUSTER_DICT ={
 
 STH2VEC: Sth2Vec = Sth2Vec(english_translation_dict=ENGLISH_TRANSLATION_CLUSTER_DICT)
 NLP: NLPanalysis = NLPanalysis()
-
-if __name__ == '__main__':
-    print(STH2VEC.get_vector_of_sentence('Moja piękna dziewczyna jest super'))
