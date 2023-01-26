@@ -14,7 +14,7 @@ class AvailableGeocodeAPI(str, Enum):
     GEOAPIFY = "geoapify"
     GOOGLEAPI = "googleapi"
 
-PRIORITY_LIST = [AvailableGeocodeAPI.GOOGLEAPI, AvailableGeocodeAPI.GEOAPIFY, AvailableGeocodeAPI.POSITIONSTACK, ]
+PRIORITY_LIST = [AvailableGeocodeAPI.GOOGLEAPI, AvailableGeocodeAPI.GEOAPIFY, AvailableGeocodeAPI.POSITIONSTACK]
 
 def forward_geocode(address: str, limit: int = 1, new_model = False, which_api: Optional[AvailableGeocodeAPI] = None) -> PositionOld | PositionNew | None:
     if address is None or address == "":
@@ -33,13 +33,17 @@ def forward_geocode(address: str, limit: int = 1, new_model = False, which_api: 
 
 def _forward_geocode_per_api(address: str, limit: int = 1, new_model=False,
                     which_api: AvailableGeocodeAPI = AvailableGeocodeAPI.GOOGLEAPI) -> PositionOld | PositionNew:
-    # if len(address.split(", ")) < 3:
-    #     address = address + ", Polska"
     if which_api == AvailableGeocodeAPI.POSITIONSTACK:
+        if POSITIONSTACK_API_KEY is None or POSITIONSTACK_API_KEY == "":
+            raise Exception("Positionstack API key is not set")
         return forward_geocode_positionstack(address, limit, new_model)
     elif which_api == AvailableGeocodeAPI.GEOAPIFY:
+        if GEOAPIFY_API_KEY is None or GEOAPIFY_API_KEY == "":
+            raise Exception("Geoapify API key is not set")
         return forward_geocode_geoapify(address, limit, new_model)
     elif which_api == AvailableGeocodeAPI.GOOGLEAPI:
+        if GOOGLE_API_KEY is None or GOOGLE_API_KEY == "":
+            raise Exception("Google API key is not set")
         return forward_geocode_google(address, new_model)
     else:
         raise ValueError("Wrong API name")
