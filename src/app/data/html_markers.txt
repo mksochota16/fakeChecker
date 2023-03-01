@@ -31,3 +31,5 @@ search_result_marker_1; Nv2PK THOPZb CpccDe
 place_reviewer_photo; Tya61d
 place_reviewer_photo_section; KtCyie
 scrollable_div; m6QErb DxyBCb kA9KIf dS8AEf
+hotel_rating_label; fzvQIb
+hotel_review_relative_date; xRkPPb

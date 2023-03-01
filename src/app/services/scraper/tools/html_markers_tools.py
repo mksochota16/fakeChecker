@@ -212,18 +212,20 @@ class HTMLMarkers:
 
         io_files_handler.save_new_html_markers(name_dict)
         self.html_markers_dict = io_files_handler.get_saved_html_markers()
-        self.simpleScrapeTools = SimpleScrapeTools(self.driver)
+        self.simpleScrapeTools = SimpleScrapeTools(self.driver, self.html_markers_dict)
         self.infoScrapeTools = InfoScrapeTools(self.driver, self.simpleScrapeTools, self.html_markers_dict)
 
         self.extract_private_account_marker(name_dict)
         self.extract_special_hotel_marker(name_dict)
+        # self.extract_special_hotel_marker(self.html_markers_dict)
+        # io_files_handler.save_new_html_markers(self.html_markers_dict)
         self.extract_photo_url(name_dict)
         self.extract_special_search_results_marker(name_dict)
         self.extract_place_review_photo_marker(name_dict)
 
         io_files_handler.save_new_html_markers(name_dict)
         self.html_markers_dict = io_files_handler.get_saved_html_markers()
-        self.simpleScrapeTools = SimpleScrapeTools(self.driver)
+        self.simpleScrapeTools = SimpleScrapeTools(self.driver, self.html_markers_dict)
         self.infoScrapeTools = InfoScrapeTools(self.driver, self.simpleScrapeTools, self.html_markers_dict)
 
 
@@ -251,7 +253,13 @@ class HTMLMarkers:
         for div in content:
             if div.text == "5/5" and 'hotel_rating_label' not in name_dict:
                 name_dict['hotel_rating_label'] = simple_scrape_tools.get_class_name(div)
+
+            if div.text[2:] == "miesiące temu" and 'hotel_review_relative_date' not in name_dict:
+                name_dict['hotel_review_relative_date'] = simple_scrape_tools.get_class_name(div)
+
+            if 'hotel_review_relative_date' in name_dict and 'hotel_rating_label' in name_dict:
                 break
+
         io_files_handler.save_new_html_markers(name_dict)
         self.html_markers_dict = io_files_handler.get_saved_html_markers()
 

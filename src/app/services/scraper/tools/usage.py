@@ -1,16 +1,18 @@
+import time
 from typing import Optional, Tuple
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+from datetime import datetime, date
 
 from app.config import STH2VEC
 from app.dao.dao_accounts_new import DAOAccountsNew
 from app.dao.dao_reviews_new import DAOReviewsNew
 from app.dao.dao_reviews_partial import DAOReviewsPartial
-from app.models.account import AccountNew
+from app.models.account import AccountNew, AccountNewInDB
 from app.models.base_mongo_model import MongoObjectId
-from app.models.review import ReviewNew, ReviewPartial
+from app.models.review import ReviewNew, ReviewPartial, ReviewPartialInDB
 from app.models.place import Place
 from app.models.types_cluster import CLUSTER_TYPES
 from app.models.position import Position as PositionNew
@@ -18,6 +20,7 @@ from app.models.position import Position as PositionNew
 from app.dao.dao_places import DAOPlaces
 
 from app.services.database.database import Database
+from app.services.scraper.models.review import Review
 from app.services.scraper.tools.html_markers_tools import HTMLMarkers
 from app.services.scraper.tools.info_scrape_tools import *
 from app.services.scraper.tools import io_files_handler
@@ -38,7 +41,7 @@ class ScraperUsage:
         self.og_database = Database(original_database=True)
         self.new_database = Database(original_database=False)
 
-    def collect_data_from_place(self, url, max_scroll_seconds: int = 5) -> Tuple[MongoObjectId,int]:
+    def collect_data_from_place(self, url, max_scroll_seconds: int = 5, new_scrape = False) -> Tuple[MongoObjectId,int]:
         self.simple_scrape_tools.start_scraping(url)
         self.info_scrape_tools.wait_for_place_site_to_load()
 
@@ -62,7 +65,8 @@ class ScraperUsage:
             rating=place_rating,
             number_of_reviews=number_of_reviews,
             cluster=place_cluster,
-            type_of_object=type_of_object
+            type_of_object=type_of_object,
+            new_scrape=new_scrape
         )
 
         place_id: MongoObjectId = dao_places.insert_one(place)
@@ -81,8 +85,12 @@ class ScraperUsage:
                                                                               reviewer_section).text.strip()
                 content: str = self.info_scrape_tools.find_using_html_marker(
                     self.html_markers_dict['place_reviewer_content'], reviewer_section).text.strip()
-                stars: int = int(self.info_scrape_tools.find_using_html_marker(
-                    self.html_markers_dict['all_reviewer_stars'], reviewer_section).attrs['aria-label'][1])
+                try:
+                    stars: int = int(self.info_scrape_tools.find_using_html_marker(
+                        self.html_markers_dict['all_reviewer_stars'], reviewer_section).attrs['aria-label'][1])
+                except AttributeError:
+                    stars: int = int(self.info_scrape_tools.find_using_html_marker(
+                        self.html_markers_dict['hotel_rating_label'], reviewer_section).text.split("/")[0])
                 reviewer_url: str = \
                 self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_url'],
                                                               reviewer_section).attrs['href']
@@ -94,6 +102,14 @@ class ScraperUsage:
                     self.html_markers_dict['place_reviewer_date'],
                     reviewer_section).text.replace("Nowa", "").strip()
                 date_absolute: datetime = convert_from_relative_to_absolute_date(date_relative)
+                if date_absolute is None:
+                    # the retrieved date was not correct
+                    date_relative: str = self.info_scrape_tools.find_using_html_marker(
+                        self.html_markers_dict['hotel_review_relative_date'],
+                        reviewer_section).text.replace("Nowa", "").replace("w:","").replace("Google","").strip()
+                    date_absolute: datetime = convert_from_relative_to_absolute_date(date_relative)
+                    if date_absolute is None:
+                        date_absolute = datetime.combine(date.min, datetime.min.time())
                 profile_picture_src: str = \
                 self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_png'],
                                                               reviewer_section).attrs['src']
@@ -149,7 +165,7 @@ class ScraperUsage:
 
         return place_id, misread_reviews
 
-    def collect_data_from_person(self, url: str, max_scroll_seconds: int = 5, reviewer_id: Optional[str] = None) -> Tuple[MongoObjectId,int]:
+    def collect_data_from_person(self, url: str, max_scroll_seconds: int = 5, reviewer_id: Optional[str] = None, new_scrape=False) -> Tuple[MongoObjectId,int]:
         if reviewer_id is not None:
             url = f"https://www.google.com/maps/contrib/{reviewer_id}/reviews"
         dao_accounts_new: DAOAccountsNew = DAOAccountsNew()
@@ -169,11 +185,12 @@ class ScraperUsage:
                 local_guide_level=None,
                 number_of_reviews=None,
                 is_private=False,
-                is_deleted=True
+                is_deleted=True,
+                new_scrape=new_scrape
             )
 
             account_id: MongoObjectId = dao_accounts_new.insert_one(account_to_create)
-            return account_id
+            return account_id, 0
         try:
             local_guide_info = response.find(class_=re.compile(self.html_markers_dict['reviewer_guide_level'])).text.split()
             if len(local_guide_info) > 3:  # then he is a local guide
@@ -192,11 +209,12 @@ class ScraperUsage:
                 reviewer_id=reviewer_id,
                 local_guide_level=local_guide_level,
                 number_of_reviews=number_of_reviews,
-                is_private=True
+                is_private=True,
+                new_scrape=new_scrape
             )
 
             account_id: MongoObjectId = dao_accounts_new.insert_one(account_to_create)
-            return account_id
+            return account_id, 0
 
         number_of_reviews = self.info_scrape_tools.get_number_of_reviews_of_person()  # int(number_of_reviews.text.split()[0])
         account_to_create: AccountNew = AccountNew(
@@ -205,7 +223,8 @@ class ScraperUsage:
             reviewer_id=reviewer_id,
             local_guide_level=local_guide_level,
             number_of_reviews=number_of_reviews,
-            is_private=False
+            is_private=False,
+            new_scrape=new_scrape
         )
         account_id: MongoObjectId = dao_accounts_new.insert_one(account_to_create)
         self.simple_scrape_tools.scroll_down(max_seconds=max_scroll_seconds)
@@ -272,6 +291,70 @@ class ScraperUsage:
                 misread_reviews += 1
 
         return account_id, misread_reviews
+
+    def collect_missing_data_from_partial_review(self, review_partial_in_db: ReviewPartialInDB, account_in_db: AccountNewInDB) -> ReviewNew:
+        self.simple_scrape_tools.start_scraping("https://www.google.pl/maps/preview")
+        input_element = self.driver.find_element(By.XPATH, "//input[@id='searchboxinput']")
+        input_element.send_keys(f"{review_partial_in_db.place_name} {review_partial_in_db.place_address}")
+        input_element.send_keys(Keys.ENTER)
+
+        self.info_scrape_tools.wait_for_place_site_to_load()
+
+        response = BeautifulSoup(self.driver.page_source, 'html.parser')
+        try:
+            number_of_reviews: int = self.info_scrape_tools.get_number_of_reviews_of_place(response)
+        except:
+            self.simple_scrape_tools.wait_for_element_and_click(By.XPATH,
+                                                                "//div[@class,'EIgkw OyjIsf']", 1)
+            number_of_reviews: int = self.info_scrape_tools.get_number_of_reviews_of_place(response)# constant value for now
+        place_rating: float = float(
+            response.find(class_=self.html_markers_dict['place_rating']).contents[0].text.replace(',', '.'))
+        place_url: str = self.driver.current_url
+        counter = 0
+        while place_url == "https://www.google.pl/maps/preview":
+            place_url = self.driver.current_url
+            if counter > 1000:
+                raise Exception("Place url not found")
+        type_of_object: str = self.info_scrape_tools.get_place_type(response)
+        place_cluster: CLUSTER_TYPES = STH2VEC.classify_type_of_object(type_of_object)
+
+        dao_places: DAOPlaces = DAOPlaces()
+        place: Place = Place(
+            name=review_partial_in_db.place_name,
+            url=place_url,
+            address=review_partial_in_db.place_address,
+            localization=review_partial_in_db.localization,
+            rating=place_rating,
+            number_of_reviews=number_of_reviews,
+            cluster=place_cluster,
+            type_of_object=type_of_object,
+            new_scrape=True
+        )
+
+        place_id: MongoObjectId = dao_places.insert_one(place)
+        is_local_guide: bool = account_in_db.local_guide_level > 0
+
+        review: ReviewNew = ReviewNew(
+            review_id=review_partial_in_db.review_id,
+            rating=review_partial_in_db.rating,
+            content=review_partial_in_db.content,
+            reviewer_url=f"https://www.google.com/maps/contrib/{review_partial_in_db.reviewer_id}/reviews",
+            reviewer_id=review_partial_in_db.reviewer_id,
+            photos_urls=review_partial_in_db.photos_urls,
+            response_content=review_partial_in_db.response_content,
+            date=review_partial_in_db.date,
+            is_private=False,
+            is_real=None,
+            is_local_guide=is_local_guide,
+            number_of_reviews=account_in_db.number_of_reviews,
+            profile_photo_url=None,
+            reviewer_name=account_in_db.name,
+            place_id=place_id,
+        )
+
+        dao_review_new: DAOReviewsNew = DAOReviewsNew()
+        dao_review_new.insert_one(review)
+        return review
 
 
     def check_if_account_is_deleted(self, url: str, reviewer_id: Optional[str] = None) -> str:

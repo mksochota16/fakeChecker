@@ -1,4 +1,3 @@
-import uuid
 from typing import Optional, Any
 
 from pydantic import BaseModel
@@ -18,6 +17,7 @@ class PlaceBase(BaseModel):
     type_of_object: str
     cluster: Optional[CLUSTER_TYPES]
     identifier: Optional[str]
+    new_scrape: Optional[bool] = False
 
     def __init__(self, **data: Any):
         super().__init__(**data)

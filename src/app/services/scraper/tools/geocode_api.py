@@ -14,7 +14,7 @@ class AvailableGeocodeAPI(str, Enum):
     GEOAPIFY = "geoapify"
     GOOGLEAPI = "googleapi"
 
-PRIORITY_LIST = [AvailableGeocodeAPI.GOOGLEAPI, AvailableGeocodeAPI.GEOAPIFY, AvailableGeocodeAPI.POSITIONSTACK]
+PRIORITY_LIST = [AvailableGeocodeAPI.GEOAPIFY, AvailableGeocodeAPI.POSITIONSTACK, AvailableGeocodeAPI.GOOGLEAPI]
 
 def forward_geocode(address: str, limit: int = 1, new_model = False, which_api: Optional[AvailableGeocodeAPI] = None) -> PositionOld | PositionNew | None:
     if address is None or address == "":

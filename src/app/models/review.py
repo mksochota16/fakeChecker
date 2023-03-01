@@ -43,7 +43,7 @@ class ReviewOldInDB(ReviewOldBase, MongoDBModel):
 class ReviewNewBase(ReviewBase):
     is_local_guide: bool
     number_of_reviews: int
-    profile_photo_url: str
+    profile_photo_url: Optional[str]
     reviewer_name: str
     place_id: MongoObjectId
 
@@ -70,4 +70,5 @@ class ReviewPartial(ReviewPartialBase):
     pass
 
 class ReviewPartialInDB(ReviewPartialBase, MongoDBModel):
+    scraped_fully: Optional[bool] = False
     pass

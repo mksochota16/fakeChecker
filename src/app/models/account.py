@@ -32,7 +32,7 @@ class AccountNewBase(AccountBase):
     name: Optional[str]
     is_real: Optional[bool]
     is_deleted: Optional[bool] = False
-    pass
+    new_scrape: Optional[bool] = False
 
 class AccountNew(AccountNewBase):
     pass
