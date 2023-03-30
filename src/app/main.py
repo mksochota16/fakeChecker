@@ -242,7 +242,7 @@ def check_results(results_id: str):
 
 
 if __name__ == "__main__":
-    # uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
     #
     # dao_places: DAOPlaces = DAOPlaces()
     # dao_reviews_new: DAOReviewsNew = DAOReviewsNew()
@@ -280,18 +280,18 @@ if __name__ == "__main__":
     #
     #         counter+=1
 
-    dao_places: DAOPlaces = DAOPlaces()
-    dao_reviews_new: DAOReviewsNew = DAOReviewsNew()
-    dao_reviews_partial: DAOReviewsPartial = DAOReviewsPartial()
-    dao_accounts_new: DAOAccountsNew = DAOAccountsNew()
-    usage = ScraperUsage(headless=False)
-
-    accounts_from_new_scrape: List[AccountNewInDB] = dao_accounts_new.find_many_by_query({'new_scrape': True})
-    for account in accounts_from_new_scrape:
-        partial_reviews: List[ReviewPartialInDB] = dao_reviews_partial.find_many_by_query({'reviewer_id': account.reviewer_id})
-        for partial_review in partial_reviews:
-            try:
-                usage.collect_missing_data_from_partial_review(partial_review, account)
-                dao_reviews_partial.update_one({'_id': partial_review.id}, {'$set': {'scraped_fully': True}})
-            except:
-                dao_reviews_partial.update_one({'_id': partial_review.id}, {'$set': {'scraped_fully': False}})
+    # dao_places: DAOPlaces = DAOPlaces()
+    # dao_reviews_new: DAOReviewsNew = DAOReviewsNew()
+    # dao_reviews_partial: DAOReviewsPartial = DAOReviewsPartial()
+    # dao_accounts_new: DAOAccountsNew = DAOAccountsNew()
+    # usage = ScraperUsage(headless=False)
+    #
+    # accounts_from_new_scrape: List[AccountNewInDB] = dao_accounts_new.find_many_by_query({'new_scrape': True})
+    # for account in accounts_from_new_scrape:
+    #     partial_reviews: List[ReviewPartialInDB] = dao_reviews_partial.find_many_by_query({'reviewer_id': account.reviewer_id})
+    #     for partial_review in partial_reviews:
+    #         try:
+    #             usage.collect_missing_data_from_partial_review(partial_review, account)
+    #             dao_reviews_partial.update_one({'_id': partial_review.id}, {'$set': {'scraped_fully': True}})
+    #         except:
+    #             dao_reviews_partial.update_one({'_id': partial_review.id}, {'$set': {'scraped_fully': False}})

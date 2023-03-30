@@ -2,7 +2,7 @@
 import random
 from enum import Enum
 from math import floor
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from sklearn.utils import shuffle
 from sklearn import tree
@@ -39,8 +39,6 @@ from app.services.analysis.AnalysisTools import get_ratings_distribution_metrics
     parse_account_to_prediction_list, parse_old_review_to_prediction_list, parse_new_review_to_prediction_list
 from app.services.predictions.prediction_constants import AttributesModes
 
-global current_classifier
-
 class AvailablePredictionModels(Enum):
     # DECISION_TREE = DecisionTreeClassifier()
     RANDOM_FOREST = RandomForestClassifier(n_estimators=100)# RandomForestClassifier(max_depth=5, n_estimators=100, max_features=1) precision: 0.5082382762991128 f1: 0.6515028432168968
@@ -52,6 +50,9 @@ class AvailablePredictionModels(Enum):
     # NAIVE_BAYES = GaussianNB()
     # QUADRATIC_DISCRIMINANT_ANALYSIS = QuadraticDiscriminantAnalysis()
 
+
+global current_classifier
+current_classifier = AvailablePredictionModels.RANDOM_FOREST.value
 
 def get_and_prepare_accounts_data(save_to_file=False, bare_data=False):
     dao_accounts_old: DAOAccountsOld = DAOAccountsOld()
@@ -139,11 +140,135 @@ def get_and_prepare_reviews_data(attribute_mode: AttributesModes,save_to_file=Fa
     return prepared_data, classes
 
 
-def get_prepared_accounts_data_from_file(ignore_empty_accounts=False, bare_data = False):
+
+def get_and_prepare_accounts_data_with_new_scrape(save_to_file=True, bare_data=False, nearly_bare=False):
+    if nearly_bare and bare_data:
+        raise Exception("Cannot be nearly bare and bare at the same time")
+    dao_accounts_old: DAOAccountsOld = DAOAccountsOld()
+    dao_accounts_new: DAOAccountsNew = DAOAccountsNew()
+    accounts_fake: List[AccountOldInDB] = dao_accounts_old.find_many_by_query({"fake_service": {"$ne": "real"}})
+    accounts_real: List[AccountNewInDB] = dao_accounts_new.find_many_by_query({'new_scrape': True, 'number_of_reviews': {'$gt': 0}})
+    prepared_data = []
+    classes = []
+    progress = 0
+    amount = len(accounts_fake)
+    print("Progress fake: ")
+    print("###################")
+    for account_fake in accounts_fake:
+        dao_reviews_old: DAOReviewsOld = DAOReviewsOld()
+        reviews_of_account: List[ReviewOldInDB] = dao_reviews_old.find_reviews_of_account(account_fake.reviewer_id)
+
+        if len(reviews_of_account) == 0:
+            continue
+        account_data: List = parse_account_to_prediction_list(account=account_fake,
+                                                              reviews_of_account=reviews_of_account,
+                                                              bare_data=bare_data,
+                                                              nearly_bare=nearly_bare)
+
+        prepared_data.append(account_data)
+        classes.append(True)
+
+        progress += 1
+        if progress >= 0.05 * amount:
+            progress = 0
+            print(f"#", end="")
+
+    print("Progress real: ")
+    print("###################")
+    for account_real in accounts_real:
+        dao_reviews_partial: DAOReviewsPartial = DAOReviewsPartial()
+        reviews_of_account: List[ReviewPartialInDB] = dao_reviews_partial.find_reviews_of_account(account_real.reviewer_id)
+
+        if len(reviews_of_account) == 0:
+            continue
+        account_data: List = parse_account_to_prediction_list(account=account_real,
+                                                              reviews_of_account=reviews_of_account,
+                                                              bare_data=bare_data,
+                                                              nearly_bare=nearly_bare)
+
+        prepared_data.append(account_data)
+        classes.append(False)
+
+        progress += 1
+        if progress >= 0.05 * amount:
+            progress = 0
+            print(f"#", end="")
+
+    print("\n")
+    if save_to_file:
+        if nearly_bare:
+            file_path = 'app/data/formatted_accounts_old_and_new_nearly_bare.csv'
+        elif bare_data:
+            file_path = 'app/data/formatted_accounts_old_and_new_bare.csv'
+        else:
+            file_path = 'app/data/formatted_accounts_old_and_new.csv'
+        with open(file_path, mode='w') as f:
+            employee_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            for sample, _class in zip(prepared_data, classes):
+                sample_copy = sample.copy()
+                sample_copy.append(_class)
+                employee_writer.writerow(sample_copy)
+    return prepared_data, classes
+
+
+def get_and_prepare_reviews_data_with_new_scrape(attribute_mode: AttributesModes = AttributesModes.BASIC):
+    dao_accounts_old: DAOAccountsOld = DAOAccountsOld()
+    dao_accounts_new: DAOAccountsNew = DAOAccountsNew()
+    dao_places: DAOPlaces = DAOPlaces()
+    accounts_fake: List[AccountOldInDB] = dao_accounts_old.find_many_by_query({"fake_service": {"$ne": "real"}})
+    accounts_real: List[AccountNewInDB] = dao_accounts_new.find_many_by_query(
+        {'new_scrape': True, 'number_of_reviews': {'$gt': 0}})
+
+    dao_reviews_old: DAOReviewsOld = DAOReviewsOld()
+    dao_reviews_new: DAOReviewsNew = DAOReviewsNew()
+    prepared_data = []
+    classes = []
+    for account_fake in accounts_fake:
+        reviews_of_account: List[ReviewOldInDB] = dao_reviews_old.find_reviews_of_account(account_fake.reviewer_id)
+
+        if len(reviews_of_account) == 0:
+            continue
+
+        for review in reviews_of_account:
+            review_data = parse_old_review_to_prediction_list(review, account_fake, attribute_mode, exclude_localization=True)
+            review_data.append(account_fake.reviewer_id)
+            prepared_data.append(review_data)
+            classes.append(True)
+
+    for account_real in accounts_real:
+        reviews_of_account: List[ReviewNewInDB] = dao_reviews_new.find_reviews_of_account(account_real.reviewer_id)
+
+        if len(reviews_of_account) == 0:
+            continue
+
+        for review in reviews_of_account:
+            place: PlaceInDB = dao_places.find_by_id(review.place_id)
+            if place is None:
+                continue
+            review_data = parse_new_review_to_prediction_list(review, place, attribute_mode,
+                                                              exclude_localization=True)
+            review_data.append(account_real.reviewer_id)
+            prepared_data.append(review_data)
+            classes.append(False)
+
+    file_name = 'app/data/formatted_reviews_old_and_new.csv'
+    with open(file_name, mode='w') as f:
+        employee_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for sample, _class in zip(prepared_data, classes):
+            sample_copy = sample.copy()
+            sample_copy.append(_class)
+            employee_writer.writerow(sample_copy)
+
+    return prepared_data, classes
+
+
+def get_prepared_accounts_data_from_file(ignore_empty_accounts=False, bare_data = False, file_name: Optional[str] = None):
     if not bare_data:
         file_path = 'app/data/formatted_accounts_no_count_data.csv' # app/data/formatted_accounts_data.csv'
     else:
         file_path = 'app/data/formatted_accounts_data_bare.csv'
+    if file_name:
+        file_path = file_name
     samples, classes = get_prepared_data_from_file(file_path, ignore_empty_accounts=ignore_empty_accounts)
     return samples, classes
 
@@ -728,9 +853,9 @@ def cut_reviewer_id(samples: List[List]) -> List[List]:
 if __name__ == '__main__':
     # prepare_data_for_all_modes()
     # get_and_prepare_accounts_data(save_to_file=True, bare_data=True)
-    # data = get_prepared_accounts_data_from_file(ignore_empty_accounts=True, bare_data=False)
-    # get_and_prepare_reviews_data(attribute_mode=AttributesModes.LESS_NLP, save_to_file=True, exclude_localization=True)
-    data = get_prepared_reviews_data_from_file(attribute_mode=AttributesModes.BEST)  # get_prepared_accounts_data_from_file(ignore_empty_accounts=True) # get_and_prepare_accounts_data(save_to_file=True)
+    # data = get_prepared_accounts_data_from_file(ignore_empty_accounts=True, file_name='app/data/formatted_accounts_old_and_new_nearly_bare.csv') # 'app/data/formatted_accounts_old_and_new_nearly_bare.csv' 'app/data/formatted_accounts_old_and_new_bare.csv'
+    # data = get_and_prepare_reviews_data(attribute_mode=AttributesModes.BASIC, save_to_file=True, exclude_localization=True)
+    data = get_prepared_reviews_data_from_file(attribute_mode=AttributesModes.BASIC, file_name='app/data/formatted_reviews_old_and_new.csv')  # get_prepared_accounts_data_from_file(ignore_empty_accounts=True) # get_and_prepare_accounts_data(save_to_file=True)
         # for i in range(20):
         #     prepared_data = get_train_and_test_datasets(3/5, data, resolve_backpack_problem=True)
         #     predicts = build_model_return_predictions(prepared_data[0], prepared_data[1], prepared_data[2])
@@ -741,7 +866,8 @@ if __name__ == '__main__':
     # for classifier in AvailablePredictionModels:
     #     current_classifier = classifier.value
     #     print(f"Classifier: {classifier.name}")
-    #     k_fold_validation(10, data, resolve_backpack_problem=True)
+    for i in range(10):
+        k_fold_validation(10, data, resolve_backpack_problem=True)
 
     # predict_all_reviews_from_new_scrape_one_model()
     # predict_all_old_reviews()
@@ -749,4 +875,7 @@ if __name__ == '__main__':
     # trained_models, test_samples, test_classes = fit_and_tests_all_models(data, frac=0.8)
     # test_vote_of_trained_models(test_samples, test_classes)
     # update_predictions_of_reviews_from_new_scrape(attribute_mode=AttributesModes.SENTIMENT_CAPS_INTER)
-    train_best_from_every_available_models(data, "reviews", frac = 0.8, bare_data=False, resolve_backpack_problem=True)
+    # train_best_from_every_available_models(data, "reviews", frac = 0.8, bare_data=False, resolve_backpack_problem=True)
+    # get_and_prepare_accounts_data_with_new_scrape(bare_data=True)
+    # get_and_prepare_accounts_data_with_new_scrape(nearly_bare=True)
+    # get_and_prepare_reviews_data_with_new_scrape()

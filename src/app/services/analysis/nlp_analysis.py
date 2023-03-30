@@ -114,7 +114,7 @@ class NLPanalysis:
 
         return StyloMetrixResults(**result_dict)
 
-    def analyze_name_of_account(self, account_name):
+    def analyze_name_of_account(self, account_name) -> float:
         names = self.name_files[0]
         surnames = self.name_files[1]
         try:
@@ -155,7 +155,7 @@ class NLPanalysis:
 
                 return name_val
         except:
-            pass
+            raise Exception("Error in name analysis")
 
 
 if __name__ == '__main__':
