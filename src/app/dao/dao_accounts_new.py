@@ -1,9 +1,9 @@
 from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
 
-from app.dao.dao_base import DAOBase
-from app.config import MONGO_CLIENT, MONGODB_NEW_DB_NAME
-from app.models.account import AccountNew, AccountNewInDB
+from dao.dao_base import DAOBase
+from config import MONGO_CLIENT, MONGODB_NEW_DB_NAME
+from models.account import AccountNew, AccountNewInDB
 
 
 class DAOAccountsNew(DAOBase):

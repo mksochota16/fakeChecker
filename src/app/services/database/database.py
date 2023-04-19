@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 
-from app.services.scraper.models.position import Position
+from services.scraper.models.position import Position
 
 
 class Database:

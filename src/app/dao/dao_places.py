@@ -2,9 +2,9 @@ import pymongo
 from pymongo.errors import DuplicateKeyError
 from bson import ObjectId
 
-from app.dao.dao_base import DAOBase
-from app.config import MONGO_CLIENT, MONGODB_NEW_DB_NAME
-from app.models.place import Place, PlaceInDB
+from dao.dao_base import DAOBase
+from config import MONGO_CLIENT, MONGODB_NEW_DB_NAME
+from models.place import Place, PlaceInDB
 
 
 class DAOPlaces(DAOBase):

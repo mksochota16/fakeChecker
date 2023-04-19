@@ -6,22 +6,22 @@ from bson import ObjectId
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 
-from app.config import ADMIN_API_KEY
-from app.dao.dao_accounts_new import DAOAccountsNew
-from app.dao.dao_background_tasks import DAOBackgroundTasks
-from app.dao.dao_places import DAOPlaces
-from app.dao.dao_reviews_new import DAOReviewsNew
-from app.dao.dao_reviews_partial import DAOReviewsPartial
-from app.models.account import AccountNewInDB
-from app.models.background_tasks import BackgroundTaskPlace, BackgroundTaskRunning, BackgroundTaskTypes, \
+from config import ADMIN_API_KEY
+from dao.dao_accounts_new import DAOAccountsNew
+from dao.dao_background_tasks import DAOBackgroundTasks
+from dao.dao_places import DAOPlaces
+from dao.dao_reviews_new import DAOReviewsNew
+from dao.dao_reviews_partial import DAOReviewsPartial
+from models.account import AccountNewInDB
+from models.background_tasks import BackgroundTaskPlace, BackgroundTaskRunning, BackgroundTaskTypes, \
     BackgroundTaskAccount, BackgroundTaskRenewMarkers, BackgroundTaskGetMoreData
-from app.models.base_mongo_model import MongoObjectId
-from app.models.place import Place, PlaceInDB
-from app.models.response import PlaceResponse, NoReviewsFoundResponse, FailedToCollectDataResponse, AccountResponse, \
+from models.base_mongo_model import MongoObjectId
+from models.place import Place, PlaceInDB
+from models.response import PlaceResponse, NoReviewsFoundResponse, FailedToCollectDataResponse, AccountResponse, \
     AccountIsPrivateException, AccountIsPrivateResponse, BackgroundTaskRunningResponse
-from app.models.review import ReviewNewInDB, ReviewPartialInDB
-from app.services.predictions.prediction_tools import predict_reviews_from_place, predict_account
-from app.services.scraper.tools.usage import ScraperUsage
+from models.review import ReviewNewInDB, ReviewPartialInDB
+from services.predictions.prediction_tools import predict_reviews_from_place, predict_account
+from services.scraper.tools.usage import ScraperUsage
 
 app = FastAPI()
 

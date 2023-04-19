@@ -9,10 +9,10 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 
-from app.services.analysis import geolocation
-from app.services.scraper.models.people_simple_credentials import PeopleSimpleCredentials
-from app.services.scraper.models.position import Position
-from app.services.scraper.tools import geocode_api
+from services.analysis import geolocation
+from services.scraper.models.people_simple_credentials import PeopleSimpleCredentials
+from services.scraper.models.position import Position
+from services.scraper.tools import geocode_api
 
 
 def getMissingUrl(reviewer_id, review_id):

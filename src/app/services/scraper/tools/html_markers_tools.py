@@ -4,11 +4,11 @@ import time
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 
-from app.services.scraper.tools import io_files_handler
-from app.services.scraper.tools import simple_scrape_tools
-from app.services.scraper.tools.info_scrape_tools import InfoScrapeTools
-from app.services.scraper.tools.simple_scrape_tools import SimpleScrapeTools
-from app.services.scraper.utils.magic_scroll_formula import magic_scroll_formula
+from services.scraper.tools import io_files_handler
+from services.scraper.tools import simple_scrape_tools
+from services.scraper.tools.info_scrape_tools import InfoScrapeTools
+from services.scraper.tools.simple_scrape_tools import SimpleScrapeTools
+from services.scraper.utils.magic_scroll_formula import magic_scroll_formula
 
 
 class HTMLMarkers:

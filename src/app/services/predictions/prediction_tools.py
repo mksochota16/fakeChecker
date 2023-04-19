@@ -21,23 +21,23 @@ import numpy as np
 import csv
 import pickle
 
-from app.config import NLP, ENGLISH_TRANSLATION_CLUSTER_DICT
-from app.dao.dao_accounts_new import DAOAccountsNew
-from app.dao.dao_accounts_old import DAOAccountsOld
-from app.dao.dao_places import DAOPlaces
-from app.dao.dao_reviews_new import DAOReviewsNew
+from config import NLP, ENGLISH_TRANSLATION_CLUSTER_DICT
+from dao.dao_accounts_new import DAOAccountsNew
+from dao.dao_accounts_old import DAOAccountsOld
+from dao.dao_places import DAOPlaces
+from dao.dao_reviews_new import DAOReviewsNew
 
-from app.dao.dao_reviews_old import DAOReviewsOld
-from app.dao.dao_reviews_partial import DAOReviewsPartial
-from app.models.account import AccountOldInDB, AccountNewInDB
-from app.models.base_mongo_model import MongoObjectId
-from app.models.place import PlaceInDB
-from app.models.response import AccountIsPrivateException
-from app.models.review import ReviewOldInDB, ReviewNewInDB, ReviewPartialInDB
-from app.services.analysis.AnalysisTools import get_ratings_distribution_metrics, get_geolocation_distribution_metrics, \
+from dao.dao_reviews_old import DAOReviewsOld
+from dao.dao_reviews_partial import DAOReviewsPartial
+from models.account import AccountOldInDB, AccountNewInDB
+from models.base_mongo_model import MongoObjectId
+from models.place import PlaceInDB
+from models.response import AccountIsPrivateException
+from models.review import ReviewOldInDB, ReviewNewInDB, ReviewPartialInDB
+from services.analysis.AnalysisTools import get_ratings_distribution_metrics, get_geolocation_distribution_metrics, \
     get_type_of_objects_counts_for_account, get_percentage_of_photographed_reviews, get_percentage_of_responded_reviews, \
     parse_account_to_prediction_list, parse_old_review_to_prediction_list, parse_new_review_to_prediction_list
-from app.services.predictions.prediction_constants import AttributesModes
+from services.predictions.prediction_constants import AttributesModes
 
 global current_classifier
 
@@ -83,9 +83,9 @@ def get_and_prepare_accounts_data(save_to_file=False, bare_data=False):
     print("\n")
     if save_to_file:
         if not bare_data:
-            file_path = 'app/data/formatted_accounts_no_count_data.csv'
+            file_path = 'data/formatted_accounts_no_count_data.csv'
         else:
-            file_path = 'app/data/formatted_accounts_data_bare.csv'
+            file_path = 'data/formatted_accounts_data_bare.csv'
         with open(file_path, mode='w') as f:
             employee_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             for sample, _class in zip(prepared_data, classes):
@@ -126,7 +126,7 @@ def get_and_prepare_reviews_data(attribute_mode: AttributesModes,save_to_file=Fa
     print("\n")
     if save_to_file:
         if not exclude_localization:
-            file_name = 'app/data/formatted_reviews_data.csv'
+            file_name = 'data/formatted_reviews_data.csv'
         if file_name is None:
             file_name = attribute_mode.value
         with open(file_name, mode='w') as f:
@@ -141,9 +141,9 @@ def get_and_prepare_reviews_data(attribute_mode: AttributesModes,save_to_file=Fa
 
 def get_prepared_accounts_data_from_file(ignore_empty_accounts=False, bare_data = False):
     if not bare_data:
-        file_path = 'app/data/formatted_accounts_no_count_data.csv' # app/data/formatted_accounts_data.csv'
+        file_path = 'data/formatted_accounts_no_count_data.csv' # data/formatted_accounts_data.csv'
     else:
-        file_path = 'app/data/formatted_accounts_data_bare.csv'
+        file_path = 'data/formatted_accounts_data_bare.csv'
     samples, classes = get_prepared_data_from_file(file_path, ignore_empty_accounts=ignore_empty_accounts)
     return samples, classes
 
@@ -483,7 +483,7 @@ def knapSack(W, wt, val, n):
     return dp[W]  # returning the maximum value of knapsack
 
 
-def predict_reviews_from_place(place_id: MongoObjectId, model_path: str = "app/pickled_prediction_models/reviews/RANDOM_FOREST_BEST_SENT_CAPS_INTER",attribute_mode: AttributesModes = AttributesModes.BEST):
+def predict_reviews_from_place(place_id: MongoObjectId, model_path: str = "pickled_prediction_models/reviews/RANDOM_FOREST_BEST_SENT_CAPS_INTER",attribute_mode: AttributesModes = AttributesModes.BEST):
     dao_places: DAOPlaces = DAOPlaces()
     dao_reviews: DAOReviewsNew = DAOReviewsNew()
 
@@ -495,7 +495,7 @@ def predict_reviews_from_place(place_id: MongoObjectId, model_path: str = "app/p
         dao_reviews.update_one({"_id": review.id}, {"$set": {"is_real": not prediction[0]}})
     print("Reviews predictions updated")
 
-def predict_account(account_id: MongoObjectId, model_path: str = "app/pickled_prediction_models/accounts/RANDOM_FOREST_BEST", with_scraped_reviews: bool = False):
+def predict_account(account_id: MongoObjectId, model_path: str = "pickled_prediction_models/accounts/RANDOM_FOREST_BEST", with_scraped_reviews: bool = False):
     dao_accounts_new: DAOAccountsNew = DAOAccountsNew()
     dao_reviews_partial: DAOReviewsPartial = DAOReviewsPartial()
 
@@ -624,8 +624,8 @@ def fit_and_tests_all_models(all_data, what_to_predict: str, frac=0.8):
                 f_f1 = temp_f_f1
                 f_recall = temp_f_recall
         print("")
-        pickle.dump(model, open(f"app/pickled_prediction_models/{what_to_predict}/{available_model.name}", 'wb'))
-        with open(f"app/pickled_prediction_models/{what_to_predict}/{available_model.name}.metrics", 'w') as metrics_file:
+        pickle.dump(model, open(f"pickled_prediction_models/{what_to_predict}/{available_model.name}", 'wb'))
+        with open(f"pickled_prediction_models/{what_to_predict}/{available_model.name}.metrics", 'w') as metrics_file:
             metrics_file.write(f'{precision} {f1}')
         print(f"Model {available_model.name} \n"
               f"FAKE: precision: {precision} f1: {f1} recall: {recall} \n"
@@ -659,8 +659,8 @@ def train_best_from_every_available_models(data, what_to_predict: str, frac=0.7,
                 f_recall = temp_f_recall
         print("")
 
-        pickle.dump(model, open(f"app/pickled_prediction_models/{what_to_predict}{file_path_add}/{available_model.name}", 'wb'))
-        with open(f"app/pickled_prediction_models/{what_to_predict}{file_path_add}/{available_model.name}.metrics",
+        pickle.dump(model, open(f"pickled_prediction_models/{what_to_predict}{file_path_add}/{available_model.name}", 'wb'))
+        with open(f"pickled_prediction_models/{what_to_predict}{file_path_add}/{available_model.name}.metrics",
                   'w') as metrics_file:
             metrics_file.write(f'{precision} {f1}')
         print(f"Model {available_model.name} \n"
@@ -671,8 +671,8 @@ def train_best_from_every_available_models(data, what_to_predict: str, frac=0.7,
 def load_all_trained_models(what_to_predict: str):
     trained_models = []
     for available_model in AvailablePredictionModels:
-        model = pickle.load(open(f"app/pickled_prediction_models/{what_to_predict}/{available_model.name}", 'rb'))
-        with open(f"app/pickled_prediction_models/{what_to_predict}/{available_model.name}.metrics", 'r') as metrics_file:
+        model = pickle.load(open(f"pickled_prediction_models/{what_to_predict}/{available_model.name}", 'rb'))
+        with open(f"pickled_prediction_models/{what_to_predict}/{available_model.name}.metrics", 'r') as metrics_file:
             precision, f1 = metrics_file.read().split()
             precision = float(precision)
             f1 = float(f1)

@@ -4,10 +4,10 @@ from typing import Optional
 import googlemaps
 from requests import (Response, Request, PreparedRequest, Session)
 
-from app.config import POSITIONSTACK_API_KEY, GEOAPIFY_API_KEY, GOOGLE_API_KEY
-from app.models.http_methods import MethodsEnum
-from app.services.scraper.models.position import Position as PositionOld
-from app.models.position import Position as PositionNew
+from config import POSITIONSTACK_API_KEY, GEOAPIFY_API_KEY, GOOGLE_API_KEY
+from models.http_methods import MethodsEnum
+from services.scraper.models.position import Position as PositionOld
+from models.position import Position as PositionNew
 
 class AvailableGeocodeAPI(str, Enum):
     POSITIONSTACK = "positionstack"

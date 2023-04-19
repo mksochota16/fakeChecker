@@ -3,9 +3,9 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from app.models.base_mongo_model import MongoDBModel, MongoObjectId
-from app.models.position import Position
-from app.models.types_cluster import CLUSTER_TYPES
+from models.base_mongo_model import MongoDBModel, MongoObjectId
+from models.position import Position
+from models.types_cluster import CLUSTER_TYPES
 
 
 class ReviewBase(BaseModel):

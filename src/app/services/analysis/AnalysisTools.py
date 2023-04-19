@@ -9,15 +9,15 @@ from pyclustering.cluster.kmeans import kmeans
 from pyclustering.utils import distance_metric, type_metric
 from tabulate import tabulate
 
-from app.config import ENGLISH_TRANSLATION_CLUSTER_DICT, NLP
-from app.dao.dao_reviews_old import DAOReviewsOld
-from app.models.account import AccountBase, AccountOldInDB
-from app.models.place import PlaceInDB
-from app.models.review import ReviewOldInDB, ReviewPartialInDB, ReviewNewInDB, ReviewBase
-from app.services.analysis import geolocation
-from app.services.analysis.nlp_analysis import StyloMetrixResults
-from app.services.predictions.prediction_constants import AttributesModes
-from app.services.scraper.models.position import Position
+from config import ENGLISH_TRANSLATION_CLUSTER_DICT, NLP
+from dao.dao_reviews_old import DAOReviewsOld
+from models.account import AccountBase, AccountOldInDB
+from models.place import PlaceInDB
+from models.review import ReviewOldInDB, ReviewPartialInDB, ReviewNewInDB, ReviewBase
+from services.analysis import geolocation
+from services.analysis.nlp_analysis import StyloMetrixResults
+from services.predictions.prediction_constants import AttributesModes
+from services.scraper.models.position import Position
 
 import pandas
 
