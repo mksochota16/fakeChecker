@@ -42,7 +42,7 @@ def place_scraper(url: str, background_tasks: BackgroundTasks,
     )
 
 def _place_scraper(url: str, mongo_object_id: MongoObjectId, max_scroll_time: int = 10, new_scrape = False):
-    usage = ScraperUsage(headless=False)
+    usage = ScraperUsage(headless=True)
     dao_background_tasks = DAOBackgroundTasks()
     try:
         scraper_result: Tuple[MongoObjectId, int] = usage.collect_data_from_place(url=url,
