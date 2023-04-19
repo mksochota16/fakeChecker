@@ -114,7 +114,7 @@ class NLPanalysis:
 
         return StyloMetrixResults(**result_dict)
 
-    def analyze_name_of_account(self, account_name) -> float:
+    def analyze_name_of_account(self, account_name) -> int:
         names = self.name_files[0]
         surnames = self.name_files[1]
         try:

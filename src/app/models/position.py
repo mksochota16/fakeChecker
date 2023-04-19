@@ -10,3 +10,8 @@ class Position(BaseModel):
 
     def to_old_model(self) -> OldPosition:
         return OldPosition(self.lat, self.lon)
+
+    def make_approximation(self, precision: int = 1):
+        return Position(
+            lat = round(self.lat, precision),
+            lon = round(self.lon, precision))

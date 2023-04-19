@@ -3,7 +3,7 @@ from statistics import mean
 
 import matplotlib.dates as mdates
 from collections import Counter
-from typing import List
+from typing import List, Optional
 import time
 
 import numpy as np
@@ -15,7 +15,7 @@ from fastapi.openapi.models import Response
 from matplotlib import pyplot as plt
 from tabulate import tabulate
 
-from app.config import NLP
+from app.config import NLP, MONGO_CLIENT
 from app.dao.dao_accounts_new import DAOAccountsNew
 from app.dao.dao_accounts_old import DAOAccountsOld
 from app.dao.dao_places import DAOPlaces
@@ -24,11 +24,12 @@ from app.models.place import PlaceInDB
 from app.services.scraper.models.position import Position
 from app.dao.dao_reviews_new import DAOReviewsNew
 from app.dao.dao_reviews_old import DAOReviewsOld
-from app.models.account import AccountOldInDB, AccountNewInDB
+from app.models.account import AccountOldInDB, AccountNewInDB, AccountOld, AccountInAnonymisedGMR_PLDB, AccountInGMR_PLDB
 from app.models.base_mongo_model import MongoObjectId
 from app.models.response import PlaceResponse, NoReviewsFoundResponse, FailedToCollectDataResponse, AccountResponse, \
     AccountIsPrivateException, AccountIsPrivateResponse
-from app.models.review import ReviewOldInDB, ReviewNewInDB, ReviewOldBase, ReviewPartialInDB
+from app.models.review import ReviewOldInDB, ReviewNewInDB, ReviewOldBase, ReviewPartialInDB, ReviewInAnonymisedGMR_PLDB, \
+    ReviewInGMR_PLDB
 from app.services.analysis import geolocation
 from app.services.analysis.AnalysisTools import calculateNMeans, get_distances_to_centroids
 from app.services.analysis.geolocation import is_in_poland
@@ -732,33 +733,39 @@ def get_histograms_of_name_scores():
 
     fake_name_scores: List[float] = [NLP.analyze_name_of_account(account.name) for account in fake_accounts]
     real_name_scores: List[float] = [NLP.analyze_name_of_account(account.name) for account in real_accounts]
+    print(mean(fake_name_scores))
+    print(mean(real_name_scores))
     fake_name_scores = [score if score < 1200000 else 1200000 for score in fake_name_scores]
     real_name_scores = [score if score < 1200000 else 1200000 for score in real_name_scores]
 
-    plt.hist(fake_name_scores, bins=20, edgecolor='black', density=True, stacked=True)
-    # plt.title(f'Histogram of fake accounts\' name scores')
-    plt.ylabel('Number of accounts')
-    plt.xlabel('Name score')
-    plt.show()
 
-    plt.hist(real_name_scores, bins=20, edgecolor='black', density=True, stacked=True)
-    # plt.title(f'Histogram of real accounts\' name scores')
-    plt.ylabel('Number of accounts')
-    plt.xlabel('Name score')
-    plt.show()
+    # plt.hist(fake_name_scores, bins=20, edgecolor='black', weights=np.ones(len(fake_name_scores))/len(fake_name_scores))
+    # #plt.bar(real.keys(), real.values(), 0.9, color='g', label="genuine")
+    # # plt.title(f'Histogram of fake accounts\' name scores')
+    # plt.ylabel('Number of accounts')
+    # plt.xlabel('Name score')
+    # plt.show()
+    #
+    # plt.hist(real_name_scores, bins=20, edgecolor='black', weights=np.ones(len(real_name_scores))/len(real_name_scores))
+    # # plt.title(f'Histogram of real accounts\' name scores')
+    # plt.ylabel('Number of accounts')
+    # plt.xlabel('Name score')
+    # plt.show()
 
     fake_name_scores = [score for score in fake_name_scores if score < 400000]
     real_name_scores = [score for score in real_name_scores if score < 400000]
 
-    plt.hist(fake_name_scores, bins=20, edgecolor='black', density=True, stacked=True)
+    print(mean(fake_name_scores))
+    print(mean(real_name_scores))
+    plt.hist(fake_name_scores, bins=20, edgecolor='black', weights=np.ones(len(fake_name_scores))/len(fake_name_scores))
     # plt.title(f'Histogram of fake accounts\' name scores (zoomed)')
-    plt.ylabel('Number of accounts')
+    plt.ylabel('Account share')
     plt.xlabel('Name score')
     plt.show()
 
-    plt.hist(real_name_scores, bins=20, edgecolor='black', density=True, stacked=True)
+    plt.hist(real_name_scores, bins=20, edgecolor='black', weights=np.ones(len(real_name_scores))/len(real_name_scores))
     # plt.title(f'Histogram of real accounts\' name scores (zoomed)')
-    plt.ylabel('Number of accounts')
+    plt.ylabel('Account share')
     plt.xlabel('Name score')
     plt.show()
 
@@ -799,6 +806,201 @@ def get_map_distributions_of_accounts_fake():
     print("======= FINISHED =======")
     m.save(f'D:/OneDrive - Politechnika Warszawska/Studia/Szkoła Orłów/Artykuł/obrazki_nowe/collected_fake.html')
 
+def create_GMR_PL_dataset():
+    dao_accounts_old: DAOAccountsOld = DAOAccountsOld()
+    dao_reviews_old: DAOReviewsOld = DAOReviewsOld()
+
+    dao_places: DAOPlaces = DAOPlaces()
+    dao_accounts_new: DAOAccountsNew = DAOAccountsNew()
+    dao_reviews_new: DAOReviewsNew = DAOReviewsNew()
+
+    accounts_fake: List[AccountOldInDB] = dao_accounts_old.find_many_by_query({'fake_service': {'$ne':'real'}})
+    accounts_fake_transformed: List[AccountOldInDB] = []
+    for account in accounts_fake:
+        account_transformed: AccountOldInDB = AccountOldInDB(
+            name = account.name,
+            reviewer_id = account.reviewer_id,
+            local_guide_level = account.local_guide_level,
+            number_of_reviews = account.number_of_reviews,
+            is_private = account.is_private,
+            reviewer_url = account.reviewer_url,
+            fake_service = account.fake_service,
+            is_deleted = account.is_deleted,
+            _id = account.id
+        )
+        accounts_fake_transformed.append(account_transformed)
+
+    fake_reviews: List[ReviewOldInDB] = dao_reviews_old.find_many_by_query({'is_real': False})
+    fake_reviews_transformed: List[ReviewOldInDB] = []
+    for fake_review in fake_reviews:
+        account: AccountOldInDB = dao_accounts_old.find_one_by_query({'reviewer_id':fake_review.reviewer_id})
+        review_transformed: ReviewOldInDB = ReviewOldInDB(
+            place_name=fake_review.place_name,
+            place_url=fake_review.place_url,
+            localization=fake_review.localization,
+            type_of_object=fake_review.type_of_object,
+            cluster=fake_review.cluster,
+
+            review_id=fake_review.review_id,
+            rating=fake_review.rating,
+            content=fake_review.content,
+            reviewer_url=fake_review.reviewer_url,
+            reviewer_id=fake_review.reviewer_id,
+            photos_urls=fake_review.photos_urls,
+            response_content=fake_review.response_content,
+            date=fake_review.date,
+            is_real=False,
+            _id=fake_review.id,
+            account_id=account.id
+        )
+        fake_reviews_transformed.append(review_transformed)
+
+    accounts_real: List[AccountNewInDB] = dao_accounts_new.find_many_by_query({'new_scrape': True})
+    accounts_real_transformed: List[AccountOldInDB] = [account.to_old_model("real") for account in accounts_real]
+
+    real_reviews_transformed: List[ReviewOldInDB] = []
+    for real_account in accounts_real:
+        reviews_of_account: List[ReviewNewInDB] = dao_reviews_new.find_many_by_query({'reviewer_id': real_account.reviewer_id, 'new_scrape': True})
+        for review in reviews_of_account:
+            connected_place: PlaceInDB = dao_places.find_by_id(review.place_id)
+            review_transformed: ReviewOldInDB = ReviewOldInDB(
+                place_name=connected_place.name,
+                place_url=connected_place.url,
+                localization=connected_place.localization,
+                type_of_object=connected_place.type_of_object,
+                cluster=connected_place.cluster,
+
+                review_id=review.review_id,
+                rating=review.rating,
+                content=review.content,
+                reviewer_url=review.reviewer_url,
+                reviewer_id=review.reviewer_id,
+                photos_urls=review.photos_urls,
+                response_content=review.response_content,
+                date=review.date,
+                is_real=True,
+                _id=review.id,
+                account_id = real_account.id
+            )
+            real_reviews_transformed.append(review_transformed)
+
+    client = MONGO_CLIENT
+    db = client['gmr_pl_full']
+    accounts = db["accounts"]
+    accounts_real_transformed.extend(accounts_fake_transformed)
+    accounts_in_gmr_pl_db: List[AccountInGMR_PLDB] = [AccountInGMR_PLDB.from_old_model(account) for account in accounts_real_transformed]
+    accounts.insert_many([account.to_dict() for account in accounts_in_gmr_pl_db])
+    reviews = db["reviews"]
+    real_reviews_transformed.extend(fake_reviews_transformed)
+    reviews_in_gmr_pl_db: List[ReviewInGMR_PLDB] = [ReviewInGMR_PLDB.from_old_model(review) for review in real_reviews_transformed]
+    reviews.insert_many([review.to_dict() for review in reviews_in_gmr_pl_db])
+
+
+def create_GMR_PL_Anonymised_dataset():
+    dao_accounts_old: DAOAccountsOld = DAOAccountsOld()
+    dao_reviews_old: DAOReviewsOld = DAOReviewsOld()
+
+    dao_places: DAOPlaces = DAOPlaces()
+    dao_accounts_new: DAOAccountsNew = DAOAccountsNew()
+    dao_reviews_new: DAOReviewsNew = DAOReviewsNew()
+
+    accounts_fake: List[AccountOldInDB] = dao_accounts_old.find_many_by_query({'fake_service': {'$ne':'real'}})
+    accounts_fake_transformed: List[AccountInAnonymisedGMR_PLDB] = []
+    for account in accounts_fake:
+        account_transformed: AccountInAnonymisedGMR_PLDB = AccountInAnonymisedGMR_PLDB(
+            name_score = NLP.analyze_name_of_account(account.name),
+            local_guide_level = account.local_guide_level,
+            number_of_reviews = account.number_of_reviews,
+            is_real=False,
+            is_private = account.is_private,
+            is_deleted = account.is_deleted,
+            _id = account.id
+        )
+        accounts_fake_transformed.append(account_transformed)
+
+    fake_reviews: List[ReviewOldInDB] = dao_reviews_old.find_many_by_query({'is_real': False})
+    fake_reviews_transformed: List[ReviewInAnonymisedGMR_PLDB] = []
+    for fake_review in fake_reviews:
+        account: AccountOldInDB = dao_accounts_old.find_one_by_query({'reviewer_id':fake_review.reviewer_id})
+        approximate_localization: Optional[
+            Position] = fake_review.localization.make_approximation() if fake_review.localization is not None else None
+        review_transformed: ReviewInAnonymisedGMR_PLDB = ReviewInAnonymisedGMR_PLDB(
+            rating=fake_review.rating,
+            content=fake_review.content,
+            photos_urls=fake_review.photos_urls,
+            response_content=fake_review.response_content,
+            date=fake_review.date,
+            is_real=False,
+
+            approximate_localization=approximate_localization,
+            type_of_object=fake_review.type_of_object,
+            cluster=fake_review.cluster,
+
+            _id=fake_review.id,
+            account_id=account.id,
+
+            content_not_full="   Więcej" in fake_review.content,
+            content_translated="(Przetłumaczone przez Google)" in fake_review.content,
+            not_in_poland=fake_review.localization is not None and (
+                not is_in_poland(fake_review.localization.lat, fake_review.localization.lon)),
+            localization_missing=fake_review.localization is None
+        )
+        fake_reviews_transformed.append(review_transformed)
+
+    accounts_real: List[AccountNewInDB] = dao_accounts_new.find_many_by_query({'new_scrape': True})
+    accounts_real_transformed: List[AccountInAnonymisedGMR_PLDB] = []
+    for account in accounts_real:
+        account_transformed: AccountInAnonymisedGMR_PLDB = AccountInAnonymisedGMR_PLDB(
+            name_score=NLP.analyze_name_of_account(account.name),
+            local_guide_level=account.local_guide_level,
+            number_of_reviews=account.number_of_reviews,
+            is_real=True,
+            is_private=account.is_private,
+            is_deleted=account.is_deleted,
+            _id=account.id
+        )
+        accounts_real_transformed.append(account_transformed)
+
+    real_reviews_transformed: List[ReviewInAnonymisedGMR_PLDB] = []
+    for real_account in accounts_real:
+        reviews_of_account: List[ReviewNewInDB] = dao_reviews_new.find_many_by_query({'reviewer_id': real_account.reviewer_id, 'new_scrape': True})
+        for review in reviews_of_account:
+            connected_place: PlaceInDB = dao_places.find_by_id(review.place_id)
+            approximate_localization: Optional[Position] = connected_place.localization.make_approximation() if connected_place.localization is not None else None
+            review_transformed: ReviewInAnonymisedGMR_PLDB = ReviewInAnonymisedGMR_PLDB(
+                rating=review.rating,
+                content=review.content,
+                photos_urls=review.photos_urls,
+                response_content=review.response_content,
+                date=review.date,
+                is_real=True,
+
+                approximate_localization=approximate_localization,
+                type_of_object=connected_place.type_of_object,
+                cluster=connected_place.cluster,
+
+                _id=review.id,
+                account_id=real_account.id,
+
+                content_not_full="   Więcej" in review.content,
+                content_translated="(Przetłumaczone przez Google)" in review.content,
+                not_in_poland=connected_place.localization is not None and (
+                    not is_in_poland(connected_place.localization.lat, connected_place.localization.lon)),
+                localization_missing=connected_place.localization is None
+            )
+            real_reviews_transformed.append(review_transformed)
+
+    client = MONGO_CLIENT
+    db = client['gmr_pl_anonymous']
+    accounts = db["accounts"]
+    accounts_real_transformed.extend(accounts_fake_transformed)
+    accounts_dicts = [account.to_dict() for account in accounts_real_transformed]
+    accounts.insert_many(accounts_dicts)
+    reviews = db["reviews"]
+    real_reviews_transformed.extend(fake_reviews_transformed)
+    reviews_dicts = [review.to_dict() for review in real_reviews_transformed]
+    reviews.insert_many(reviews_dicts)
+
 if __name__ == '__main__':
-    get_histograms_of_name_scores()
+    create_GMR_PL_Anonymised_dataset()
 

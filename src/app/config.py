@@ -43,5 +43,5 @@ ENGLISH_TRANSLATION_CLUSTER_DICT ={
             "INNE": "Other"
         }
 
-STH2VEC: Sth2Vec = None# Sth2Vec(english_translation_dict=ENGLISH_TRANSLATION_CLUSTER_DICT)
+STH2VEC: Sth2Vec = Sth2Vec(english_translation_dict=ENGLISH_TRANSLATION_CLUSTER_DICT)
 NLP: NLPanalysis = NLPanalysis()
