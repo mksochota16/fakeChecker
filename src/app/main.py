@@ -29,6 +29,9 @@ app = FastAPI()
          response_model=BackgroundTaskRunningResponse)
 def place_scraper(url: str, background_tasks: BackgroundTasks,
                           max_scroll_time: int = 10):
+    if not url.startswith("https://www.google.com/maps/place/"):
+        raise HTTPException(status_code=400, detail="Invalid url")
+
     dao_background_tasks = DAOBackgroundTasks()
     mongo_object_id = MongoObjectId()
     background_running = BackgroundTaskRunning(
@@ -94,6 +97,9 @@ def _place_scraper(url: str, mongo_object_id: MongoObjectId, max_scroll_time: in
 @app.get("/check-account/",
          response_model=BackgroundTaskRunningResponse)
 def account_scraper(url: str, background_tasks: BackgroundTasks, max_scroll_time: int = 10):
+    if not url.startswith("https://www.google.com/maps/contrib/"):
+        raise HTTPException(status_code=400, detail="Invalid url")
+
     dao_background_tasks = DAOBackgroundTasks()
     mongo_object_id = MongoObjectId()
     background_running = BackgroundTaskRunning(
@@ -144,7 +150,9 @@ def _account_scraper(url: str, mongo_object_id: MongoObjectId, max_scroll_time: 
     return
 
 @app.get("/renew-markers/")
-def renew_html_markers(background_tasks: BackgroundTasks):
+def renew_html_markers(admin_api_key: str, background_tasks: BackgroundTasks):
+    if admin_api_key != ADMIN_API_KEY:
+        raise HTTPException(status_code=401, detail="API key is invalid")
     dao_background_tasks = DAOBackgroundTasks()
     mongo_object_id = MongoObjectId()
     background_running = BackgroundTaskRunning(
