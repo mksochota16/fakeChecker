@@ -62,13 +62,13 @@ def get_and_prepare_accounts_data(save_to_file=False, bare_data=False):
     amount = len(accounts)
     print("Progress: ")
     print("###################")
+    dao_reviews_old: DAOReviewsOld = DAOReviewsOld()
     for account in accounts:
-        dao_reviews_old: DAOReviewsOld = DAOReviewsOld()
+        if account.number_of_reviews == 0 or account.number_of_reviews is None:
+            continue
         reviews_of_account: List[ReviewOldInDB] = dao_reviews_old.find_reviews_of_account(account.reviewer_id)
 
         account_data: List = parse_account_to_prediction_list(account=account, reviews_of_account=reviews_of_account, bare_data=bare_data)
-        if account.number_of_reviews == 0:
-            continue
         prepared_data.append(account_data)
         if account.fake_service != "real":
             classes.append(True)
@@ -83,7 +83,7 @@ def get_and_prepare_accounts_data(save_to_file=False, bare_data=False):
     print("\n")
     if save_to_file:
         if not bare_data:
-            file_path = 'data/formatted_accounts_no_count_data.csv'
+            file_path = 'data/formatted_accounts_data.csv'
         else:
             file_path = 'data/formatted_accounts_data_bare.csv'
         with open(file_path, mode='w') as f:
@@ -141,7 +141,7 @@ def get_and_prepare_reviews_data(attribute_mode: AttributesModes,save_to_file=Fa
 
 def get_prepared_accounts_data_from_file(ignore_empty_accounts=False, bare_data = False):
     if not bare_data:
-        file_path = 'data/formatted_accounts_no_count_data.csv' # data/formatted_accounts_data.csv'
+        file_path = 'data/formatted_accounts_data.csv' # data/formatted_accounts_data.csv'
     else:
         file_path = 'data/formatted_accounts_data_bare.csv'
     samples, classes = get_prepared_data_from_file(file_path, ignore_empty_accounts=ignore_empty_accounts)
@@ -727,10 +727,10 @@ def cut_reviewer_id(samples: List[List]) -> List[List]:
 
 if __name__ == '__main__':
     # prepare_data_for_all_modes()
-    # get_and_prepare_accounts_data(save_to_file=True, bare_data=True)
-    # data = get_prepared_accounts_data_from_file(ignore_empty_accounts=True, bare_data=False)
+    get_and_prepare_accounts_data(save_to_file=True, bare_data=False)
+    data = get_prepared_accounts_data_from_file(ignore_empty_accounts=True, bare_data=False)
     # get_and_prepare_reviews_data(attribute_mode=AttributesModes.LESS_NLP, save_to_file=True, exclude_localization=True)
-    data = get_prepared_reviews_data_from_file(attribute_mode=AttributesModes.BEST)  # get_prepared_accounts_data_from_file(ignore_empty_accounts=True) # get_and_prepare_accounts_data(save_to_file=True)
+    #data = get_prepared_reviews_data_from_file(attribute_mode=AttributesModes.BEST)  # get_prepared_accounts_data_from_file(ignore_empty_accounts=True) # get_and_prepare_accounts_data(save_to_file=True)
         # for i in range(20):
         #     prepared_data = get_train_and_test_datasets(3/5, data, resolve_backpack_problem=True)
         #     predicts = build_model_return_predictions(prepared_data[0], prepared_data[1], prepared_data[2])
@@ -749,4 +749,4 @@ if __name__ == '__main__':
     # trained_models, test_samples, test_classes = fit_and_tests_all_models(data, frac=0.8)
     # test_vote_of_trained_models(test_samples, test_classes)
     # update_predictions_of_reviews_from_new_scrape(attribute_mode=AttributesModes.SENTIMENT_CAPS_INTER)
-    train_best_from_every_available_models(data, "reviews", frac = 0.8, bare_data=False, resolve_backpack_problem=True)
+    train_best_from_every_available_models(data, "accounts", frac = 0.7, bare_data=False, resolve_backpack_problem=False)
