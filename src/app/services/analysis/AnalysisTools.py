@@ -253,13 +253,18 @@ def is_type_already_known(type_of_object, cluster_dict):
             return True
     return False
 
-def parse_account_to_prediction_list(account: AccountBase, reviews_of_account: List[Union[ReviewOldInDB, ReviewPartialInDB]], with_scraped_reviews=False, bare_data=False) -> list:
-    if not bare_data:
-        return _parse_account_data_to_prediction_list(account=account, reviews_of_account=reviews_of_account,
-                                                      with_scraped_reviews=with_scraped_reviews)
-    else:
+def parse_account_to_prediction_list(account: AccountBase, reviews_of_account: List[Union[ReviewOldInDB, ReviewPartialInDB]], with_scraped_reviews=False, bare_data=False, nearly_bare = False) -> list:
+
+
+    if bare_data:
         return _parse_account_data_to_prediction_list_bare(account=account, reviews_of_account=reviews_of_account,
-                                                      with_scraped_reviews=with_scraped_reviews)
+                                                           with_scraped_reviews=with_scraped_reviews)
+    elif nearly_bare:
+        return _parse_account_data_to_prediction_list_nearly_bare(account=account, reviews_of_account=reviews_of_account,
+                                                           with_scraped_reviews=with_scraped_reviews)
+    else:
+        return _parse_account_data_to_prediction_list(account=account, reviews_of_account=reviews_of_account,
+                                                  with_scraped_reviews=with_scraped_reviews)
 
 def _parse_account_data_to_prediction_list(account: AccountBase,
                                            reviews_of_account: List[Union[ReviewOldInDB, ReviewPartialInDB]],
@@ -410,11 +415,11 @@ def _parse_account_data_to_prediction_list_bare(account: AccountBase,
         account_data.append(ratings_median)
         account_data.append(ratings_variance)
 
-    if len(reviews_of_account) == 0:
-        account_data.append(0)
-    else:
-        photo_reviews_percentage = get_percentage_of_photographed_reviews(account.reviewer_id, reviews_of_account)
-        account_data.append(photo_reviews_percentage)
+    # if len(reviews_of_account) == 0:
+    #     account_data.append(0)
+    # else:
+    #     photo_reviews_percentage = get_percentage_of_photographed_reviews(account.reviewer_id, reviews_of_account)
+    #     account_data.append(photo_reviews_percentage)
 
     if len(reviews_of_account) == 0:
         account_data.append(0)
@@ -423,6 +428,30 @@ def _parse_account_data_to_prediction_list_bare(account: AccountBase,
         account_data.append(responded_reviews_percentage)
 
     return account_data
+
+
+def _parse_account_data_to_prediction_list_nearly_bare(account: AccountBase,
+                                           reviews_of_account: List[Union[ReviewOldInDB, ReviewPartialInDB]],
+                                           with_scraped_reviews=False) -> list:
+    bare_data = _parse_account_data_to_prediction_list_bare(account, reviews_of_account, with_scraped_reviews)
+
+    name_score = NLP.analyze_name_of_account(account.name)
+    bare_data.append(name_score)
+
+    if len(reviews_of_account) == 0:
+        bare_data.append(0)
+        bare_data.append(0)
+        bare_data.append(0)
+    else:
+        geolocation_metrics = get_geolocation_distribution_metrics(account.reviewer_id, reviews_of_account)
+        geolocation_mean = geolocation_metrics[0]
+        geolocation_median = geolocation_metrics[1]
+        geolocation_variance = geolocation_metrics[2]
+        bare_data.append(geolocation_mean)
+        bare_data.append(geolocation_median)
+        bare_data.append(geolocation_variance)
+
+    return bare_data
 
 def parse_old_review_to_prediction_list(review: ReviewOldInDB, account: AccountOldInDB, prediction_mode: AttributesModes, exclude_localization = True) -> list:
     number_of_reviews = account.number_of_reviews
@@ -469,6 +498,8 @@ def _parse_review_data_to_prediction_list(number_of_reviews: int,
     review_data.append(name_score)
 
     review_data.append(review.rating)
+    if prediction_mode == AttributesModes.BASIC:
+        return review_data
     clusters_list = list(ENGLISH_TRANSLATION_CLUSTER_DICT.values())
     review_data.append(clusters_list.index(cluster_name))
 
