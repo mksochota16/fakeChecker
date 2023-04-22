@@ -1,7 +1,7 @@
 from math import cos, asin, sqrt, pi
 
-from app.services.scraper.models.position import Position as PositionOld
-from app.models.position import Position as PositionNew
+from services.scraper.models.position import Position as PositionOld
+from models.position import Position as PositionNew
 
 
 # returns distance in km on the globe

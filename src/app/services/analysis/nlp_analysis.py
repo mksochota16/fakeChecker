@@ -6,9 +6,9 @@ import spacy
 import stylo_metrix
 from pydantic import BaseModel
 
-from app.services.analysis.sentiment import SentimentAnalyzer
-from app.services.scraper.tools.io_files_handler import import_dataframes_from_names_files
-from app.services.scraper.tools.simple_scrape_tools import deEmojify
+from services.analysis.sentiment import SentimentAnalyzer
+from services.scraper.tools.io_files_handler import import_dataframes_from_names_files
+from services.scraper.tools.simple_scrape_tools import deEmojify
 
 
 def name_has_emojis(name):

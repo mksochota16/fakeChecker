@@ -14,7 +14,7 @@ except ImportError:
 
 import io
 
-from app.data import trained_models
+from data import trained_models
 
 class SentimentAnalyzer(SentimentPLModel):
     def __init__(self, filename: str):

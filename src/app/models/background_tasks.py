@@ -3,8 +3,8 @@ from typing import Union
 
 from pydantic import BaseModel
 
-from app.models.base_mongo_model import MongoObjectId, MongoDBModel
-from app.models.response import BackgroundTaskRunningResponse, AccountResponse, AccountIsPrivateResponse, PlaceResponse, FailedToCollectDataResponse, NoReviewsFoundResponse
+from models.base_mongo_model import MongoObjectId, MongoDBModel
+from models.response import BackgroundTaskRunningResponse, AccountResponse, AccountIsPrivateResponse, PlaceResponse, FailedToCollectDataResponse, NoReviewsFoundResponse
 
 FAKE_CHECKER_ACCOUNT_RESPONSES = Union[AccountResponse, AccountIsPrivateResponse, FailedToCollectDataResponse, BackgroundTaskRunningResponse]
 FAKE_CHECKER_PLACE_RESPONSES = Union[PlaceResponse, NoReviewsFoundResponse, FailedToCollectDataResponse, BackgroundTaskRunningResponse]

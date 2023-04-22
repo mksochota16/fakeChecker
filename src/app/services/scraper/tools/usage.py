@@ -6,26 +6,26 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime, date
 
-from app.config import STH2VEC
-from app.dao.dao_accounts_new import DAOAccountsNew
-from app.dao.dao_reviews_new import DAOReviewsNew
-from app.dao.dao_reviews_partial import DAOReviewsPartial
-from app.models.account import AccountNew, AccountNewInDB
-from app.models.base_mongo_model import MongoObjectId
-from app.models.review import ReviewNew, ReviewPartial, ReviewPartialInDB
-from app.models.place import Place
-from app.models.types_cluster import CLUSTER_TYPES
-from app.models.position import Position as PositionNew
+from config import STH2VEC
+from dao.dao_accounts_new import DAOAccountsNew
+from dao.dao_reviews_new import DAOReviewsNew
+from dao.dao_reviews_partial import DAOReviewsPartial
+from models.account import AccountNew, AccountNewInDB
+from models.base_mongo_model import MongoObjectId
+from models.review import ReviewNew, ReviewPartial, ReviewPartialInDB
+from models.place import Place
+from models.types_cluster import CLUSTER_TYPES
+from models.position import Position as PositionNew
 
-from app.dao.dao_places import DAOPlaces
+from dao.dao_places import DAOPlaces
 
-from app.services.database.database import Database
-from app.services.scraper.models.review import Review
-from app.services.scraper.tools.html_markers_tools import HTMLMarkers
-from app.services.scraper.tools.info_scrape_tools import *
-from app.services.scraper.tools import io_files_handler
-from app.services.scraper.tools.simple_scrape_tools import *
-from app.services.scraper.tools.info_scrape_tools import convert_from_relative_to_absolute_date
+from services.database.database import Database
+from services.scraper.models.review import Review
+from services.scraper.tools.html_markers_tools import HTMLMarkers
+from services.scraper.tools.info_scrape_tools import *
+from services.scraper.tools import io_files_handler
+from services.scraper.tools.simple_scrape_tools import *
+from services.scraper.tools.info_scrape_tools import convert_from_relative_to_absolute_date
 
 
 class ScraperUsage:
@@ -50,8 +50,7 @@ class ScraperUsage:
         place_address: str = response.find(class_=self.html_markers_dict['place_address']).text.strip()
         place_localization: PositionNew = geocode_api.forward_geocode(place_address, new_model=True)
         number_of_reviews: int = self.info_scrape_tools.get_number_of_reviews_of_place(response)
-        place_rating: float = float(
-            response.find(class_=self.html_markers_dict['place_rating']).contents[0].text.replace(',', '.'))
+        place_rating: float = self.info_scrape_tools.get_place_rating(response)
         place_url: str = self.driver.current_url
         type_of_object: str = self.info_scrape_tools.get_place_type(response)
         place_cluster: CLUSTER_TYPES = STH2VEC.classify_type_of_object(type_of_object)
@@ -71,7 +70,12 @@ class ScraperUsage:
 
         place_id: MongoObjectId = dao_places.insert_one(place)
 
-        self.simple_scrape_tools.wait_for_element_and_click(By.XPATH,
+        try:
+            #FIXME - this is a temporary solution, should be added to html markers collector
+            self.simple_scrape_tools.wait_for_element_and_click(By.XPATH,
+                                                            "//button[contains(@class,'hh2c6')]", 1)
+        except:
+            self.simple_scrape_tools.wait_for_element_and_click(By.XPATH,
                                                             "//div[contains(@jsaction,'pane.rating.moreReviews')]")  # constant value for now
         self.simple_scrape_tools.scroll_down(max_seconds=max_scroll_seconds)
 
@@ -83,14 +87,12 @@ class ScraperUsage:
             try:
                 reviewer_name = self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_name'],
                                                                               reviewer_section).text.strip()
-                content: str = self.info_scrape_tools.find_using_html_marker(
-                    self.html_markers_dict['place_reviewer_content'], reviewer_section).text.strip()
                 try:
-                    stars: int = int(self.info_scrape_tools.find_using_html_marker(
-                        self.html_markers_dict['all_reviewer_stars'], reviewer_section).attrs['aria-label'][1])
-                except AttributeError:
-                    stars: int = int(self.info_scrape_tools.find_using_html_marker(
-                        self.html_markers_dict['hotel_rating_label'], reviewer_section).text.split("/")[0])
+                    content: str = self.info_scrape_tools.find_using_html_marker(
+                        self.html_markers_dict['place_reviewer_content'], reviewer_section).text.strip()
+                except:
+                    content: str = ""
+                stars: int = self.info_scrape_tools.get_number_of_stars(reviewer_section)
                 reviewer_url: str = \
                 self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_url'],
                                                               reviewer_section).attrs['href']
@@ -241,17 +243,17 @@ class ScraperUsage:
                     self.html_markers_dict['place_reviewer_local_guide_and_reviews'], reviewer_section).text.strip()[:-2]
                 place_localization: Optional[PositionNew] = geocode_api.forward_geocode(place_address, new_model=True)
 
-                rating: str = self.info_scrape_tools.find_using_html_marker(
-                    self.html_markers_dict['all_reviewer_stars'], reviewer_section).attrs['aria-label'].strip().split(" ")[0]
-                rating: int = int(rating)
-
+                rating: int = self.info_scrape_tools.get_number_of_stars(reviewer_section)
                 date_relative: str = self.info_scrape_tools.find_using_html_marker(
                     self.html_markers_dict['place_reviewer_date'],
                     reviewer_section).text.replace("Nowa", "").strip()
                 date_absolute: datetime = convert_from_relative_to_absolute_date(date_relative)
 
-                content: str = self.info_scrape_tools.find_using_html_marker(
-                    self.html_markers_dict['reviewer_reviews_content'], reviewer_section).text.strip()
+                try:
+                    content: str = self.info_scrape_tools.find_using_html_marker(
+                        self.html_markers_dict['reviewer_reviews_content'], reviewer_section).text.strip()
+                except:
+                    content: str = ""
 
                 try:
                     response_content_html_marker = self.html_markers_dict['place_reviewer_response_content'][2:]

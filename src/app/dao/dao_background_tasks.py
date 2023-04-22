@@ -1,6 +1,6 @@
-from app.dao.dao_base import DAOBase
-from app.config import MONGO_CLIENT, MONGODB_NEW_DB_NAME
-from app.models.background_tasks import BackgroundTask, BackgroundTaskInDB
+from dao.dao_base import DAOBase
+from config import MONGO_CLIENT, MONGODB_NEW_DB_NAME
+from models.background_tasks import BackgroundTask, BackgroundTaskInDB
 
 
 

@@ -13,8 +13,8 @@ import numpy as np
 from sklearn.mixture import GaussianMixture
 import fasttext
 
-from app.models.types_cluster import CLUSTER_TYPES
-from app.services.scraper.tools import io_files_handler
+from models.types_cluster import CLUSTER_TYPES
+from services.scraper.tools import io_files_handler
 
 def make_clusters_of_data(data, info_dict, number_of_clusters, algorithm=None):
     X = data

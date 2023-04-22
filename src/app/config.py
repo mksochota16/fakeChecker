@@ -2,8 +2,8 @@ import os
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
-from app.services.analysis.nlp_analysis import NLPanalysis
-from app.services.analysis.sth2vec import Sth2Vec
+from services.analysis.nlp_analysis import NLPanalysis
+from services.analysis.sth2vec import Sth2Vec
 
 import warnings
 

@@ -6,22 +6,22 @@ from bson import ObjectId
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 
-from app.config import ADMIN_API_KEY
-from app.dao.dao_accounts_new import DAOAccountsNew
-from app.dao.dao_background_tasks import DAOBackgroundTasks
-from app.dao.dao_places import DAOPlaces
-from app.dao.dao_reviews_new import DAOReviewsNew
-from app.dao.dao_reviews_partial import DAOReviewsPartial
-from app.models.account import AccountNewInDB
-from app.models.background_tasks import BackgroundTaskPlace, BackgroundTaskRunning, BackgroundTaskTypes, \
+from config import ADMIN_API_KEY
+from dao.dao_accounts_new import DAOAccountsNew
+from dao.dao_background_tasks import DAOBackgroundTasks
+from dao.dao_places import DAOPlaces
+from dao.dao_reviews_new import DAOReviewsNew
+from dao.dao_reviews_partial import DAOReviewsPartial
+from models.account import AccountNewInDB
+from models.background_tasks import BackgroundTaskPlace, BackgroundTaskRunning, BackgroundTaskTypes, \
     BackgroundTaskAccount, BackgroundTaskRenewMarkers, BackgroundTaskGetMoreData
-from app.models.base_mongo_model import MongoObjectId
-from app.models.place import Place, PlaceInDB
-from app.models.response import PlaceResponse, NoReviewsFoundResponse, FailedToCollectDataResponse, AccountResponse, \
+from models.base_mongo_model import MongoObjectId
+from models.place import Place, PlaceInDB
+from models.response import PlaceResponse, NoReviewsFoundResponse, FailedToCollectDataResponse, AccountResponse, \
     AccountIsPrivateException, AccountIsPrivateResponse, BackgroundTaskRunningResponse
-from app.models.review import ReviewNewInDB, ReviewPartialInDB
-from app.services.predictions.prediction_tools import predict_reviews_from_place, predict_account
-from app.services.scraper.tools.usage import ScraperUsage
+from models.review import ReviewNewInDB, ReviewPartialInDB
+from services.predictions.prediction_tools import predict_reviews_from_place, predict_account
+from services.scraper.tools.usage import ScraperUsage
 
 app = FastAPI()
 
@@ -29,6 +29,9 @@ app = FastAPI()
          response_model=BackgroundTaskRunningResponse)
 def place_scraper(url: str, background_tasks: BackgroundTasks,
                           max_scroll_time: int = 10):
+    if not url.startswith("https://www.google.com/maps/place/"):
+        raise HTTPException(status_code=400, detail="Invalid url")
+
     dao_background_tasks = DAOBackgroundTasks()
     mongo_object_id = MongoObjectId()
     background_running = BackgroundTaskRunning(
@@ -94,6 +97,9 @@ def _place_scraper(url: str, mongo_object_id: MongoObjectId, max_scroll_time: in
 @app.get("/check-account/",
          response_model=BackgroundTaskRunningResponse)
 def account_scraper(url: str, background_tasks: BackgroundTasks, max_scroll_time: int = 10):
+    if not url.startswith("https://www.google.com/maps/contrib/"):
+        raise HTTPException(status_code=400, detail="Invalid url")
+
     dao_background_tasks = DAOBackgroundTasks()
     mongo_object_id = MongoObjectId()
     background_running = BackgroundTaskRunning(
@@ -144,7 +150,9 @@ def _account_scraper(url: str, mongo_object_id: MongoObjectId, max_scroll_time: 
     return
 
 @app.get("/renew-markers/")
-def renew_html_markers(background_tasks: BackgroundTasks):
+def renew_html_markers(admin_api_key: str, background_tasks: BackgroundTasks):
+    if admin_api_key != ADMIN_API_KEY:
+        raise HTTPException(status_code=401, detail="API key is invalid")
     dao_background_tasks = DAOBackgroundTasks()
     mongo_object_id = MongoObjectId()
     background_running = BackgroundTaskRunning(
@@ -243,55 +251,3 @@ def check_results(results_id: str):
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
-    #
-    # dao_places: DAOPlaces = DAOPlaces()
-    # dao_reviews_new: DAOReviewsNew = DAOReviewsNew()
-    # dao_accounts_new: DAOAccountsNew = DAOAccountsNew()
-    # usage = ScraperUsage(headless=True)
-    #
-    # places_from_new_scrape: List[PlaceInDB] = dao_places.find_many_by_query({'new_scrape': False})
-    # for place in places_from_new_scrape:
-    #     reviews_from_places: List[ReviewNewInDB] = dao_reviews_new.find_many_by_query({'place_id': place.id})
-    #     # sort by date
-    #     reviews_from_places.sort(key=lambda x: x.date, reverse=True)
-    #     counter = 0
-    #     for review in reviews_from_places:
-    #         if counter >= 10:
-    #             break
-    #
-    #         try:
-    #             res = dao_accounts_new.find_one_by_query({'reviewer_id': review.reviewer_id})
-    #             if res is not None:
-    #                 counter += 1
-    #                 continue
-    #         except:
-    #             pass
-    #
-    #         try:
-    #             scraper_result = usage.collect_data_from_person(reviewer_id=review.reviewer_id, max_scroll_seconds=10, url="", new_scrape=True)
-    #             scrapped_account_id: MongoObjectId = scraper_result[0]
-    #             misread_reviews: int = scraper_result[1]
-    #             account: AccountNewInDB = dao_accounts_new.find_by_id(scrapped_account_id)
-    #             if account.is_private or account.is_deleted or account.number_of_reviews == 0:
-    #                 continue
-    #         except Exception as e:
-    #             traceback.print_exc()
-    #             continue
-    #
-    #         counter+=1
-
-    # dao_places: DAOPlaces = DAOPlaces()
-    # dao_reviews_new: DAOReviewsNew = DAOReviewsNew()
-    # dao_reviews_partial: DAOReviewsPartial = DAOReviewsPartial()
-    # dao_accounts_new: DAOAccountsNew = DAOAccountsNew()
-    # usage = ScraperUsage(headless=False)
-    #
-    # accounts_from_new_scrape: List[AccountNewInDB] = dao_accounts_new.find_many_by_query({'new_scrape': True})
-    # for account in accounts_from_new_scrape:
-    #     partial_reviews: List[ReviewPartialInDB] = dao_reviews_partial.find_many_by_query({'reviewer_id': account.reviewer_id})
-    #     for partial_review in partial_reviews:
-    #         try:
-    #             usage.collect_missing_data_from_partial_review(partial_review, account)
-    #             dao_reviews_partial.update_one({'_id': partial_review.id}, {'$set': {'scraped_fully': True}})
-    #         except:
-    #             dao_reviews_partial.update_one({'_id': partial_review.id}, {'$set': {'scraped_fully': False}})

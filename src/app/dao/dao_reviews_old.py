@@ -1,6 +1,6 @@
-from app.dao.dao_base import DAOBase
-from app.config import MONGO_CLIENT, MONGODB_OLD_DB_NAME
-from app.models.review import ReviewOld, ReviewOldInDB
+from dao.dao_base import DAOBase
+from config import MONGO_CLIENT, MONGODB_OLD_DB_NAME
+from models.review import ReviewOld, ReviewOldInDB
 
 
 class DAOReviewsOld(DAOBase):

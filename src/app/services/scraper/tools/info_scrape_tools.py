@@ -9,10 +9,10 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 
-from app.services.analysis import geolocation
-from app.services.scraper.models.people_simple_credentials import PeopleSimpleCredentials
-from app.services.scraper.models.position import Position
-from app.services.scraper.tools import geocode_api
+from services.analysis import geolocation
+from services.scraper.models.people_simple_credentials import PeopleSimpleCredentials
+from services.scraper.models.position import Position
+from services.scraper.tools import geocode_api
 
 
 def getMissingUrl(reviewer_id, review_id):
@@ -93,11 +93,20 @@ class InfoScrapeTools:
         if response is None:
             response = BeautifulSoup(self.driver.page_source, 'html.parser')
         try:  # if on place page
-            review_element = response.find_all(jsaction='pane.rating.moreReviews')[0].text
-            review_info = review_element[3:].split()
-            # review_info = response.find_all(class_=re.compile(self.html_markers_dict["place_number_of_reviews"]))[
-            #     1].text.split()  # "gm2-button-alt jqnFjrOWMVU__button-blue").text.split()
-            return self.get_number_of_reviews_from_split_text(review_info)
+            try:
+                marker = self.html_markers_dict['place_rating'].split()[0]
+                review_element = response.find(class_=marker).contents[1].text[1:-1]
+                number_of_reviews = 0
+                for split in review_element.split():
+                    if split.isnumeric():
+                        number_of_reviews = number_of_reviews * 1000 + int(split)
+                return int(number_of_reviews)
+            except:
+                review_element = response.find_all(jsaction='pane.rating.moreReviews')[0].text
+                review_info = review_element[3:].split()
+                # review_info = response.find_all(class_=re.compile(self.html_markers_dict["place_number_of_reviews"]))[
+                #     1].text.split()  # "gm2-button-alt jqnFjrOWMVU__button-blue").text.split()
+                return self.get_number_of_reviews_from_split_text(review_info)
         except:  # if on reviews page
             review_info = response.find(jsan="7.fontBodySmall,0.jslog").text.split()
             if len(review_info) > 2:
@@ -107,6 +116,34 @@ class InfoScrapeTools:
             else:
                 number_of_reviews = 1
             return number_of_reviews
+
+
+    def get_place_rating(self, response=None) -> float:
+        if response is None:
+            response = BeautifulSoup(self.driver.page_source, 'html.parser')
+        try:
+            try:
+                marker = self.html_markers_dict['place_rating'].split()[0]
+                review_element = response.find(class_=marker).contents[0].text.replace(',', '.')
+                return float(review_element)
+            except:
+                return float(
+                    response.find(class_=self.html_markers_dict['place_rating']).contents[0].text.replace(',', '.'))
+        except:
+            return 0.0
+
+    def get_number_of_stars(self, reviewer_section) -> int:
+        try:
+            stars_object = self.find_using_html_marker(self.html_markers_dict['all_reviewer_stars'], reviewer_section)
+            num_stars = 0
+            for star in stars_object.contents:
+                if len(star.attrs['class']) == 2:
+                    num_stars += 1
+            return num_stars
+        except AttributeError:
+            stars: int = int(self.find_using_html_marker(
+                self.html_markers_dict['hotel_rating_label'], reviewer_section).text.split("/")[0])
+            return stars
 
     def get_number_of_reviews_of_person(self, response=None):
         if response is None:

@@ -2,9 +2,9 @@ from typing import Optional, Any
 
 from pydantic import BaseModel
 
-from app.models.base_mongo_model import MongoDBModel
-from app.models.position import Position
-from app.models.types_cluster import CLUSTER_TYPES
+from models.base_mongo_model import MongoDBModel
+from models.position import Position
+from models.types_cluster import CLUSTER_TYPES
 
 
 class PlaceBase(BaseModel):

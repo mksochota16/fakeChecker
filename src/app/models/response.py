@@ -2,8 +2,8 @@ from typing import List
 
 from pydantic import BaseModel
 
-from app.models.base_mongo_model import MongoObjectId
-from app.models.review import ReviewNewInDB
+from models.base_mongo_model import MongoObjectId
+from models.review import ReviewNewInDB
 
 
 class AccountResponse(BaseModel):

@@ -2,8 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from app.models.base_mongo_model import MongoDBModel, MongoObjectId
-
+from models.base_mongo_model import MongoDBModel, MongoObjectId
 
 class AccountBase(BaseModel):
     name: str

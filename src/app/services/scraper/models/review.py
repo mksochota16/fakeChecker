@@ -1,4 +1,4 @@
-from app.services.scraper.models.position import Position
+from services.scraper.models.position import Position
 
 
 class Review:

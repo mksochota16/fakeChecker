@@ -3,10 +3,10 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from app.models.base_mongo_model import MongoDBModel, MongoObjectId
-from app.models.position import Position
-from app.models.types_cluster import CLUSTER_TYPES
-from app.services.analysis.geolocation import is_in_poland
+from models.base_mongo_model import MongoDBModel, MongoObjectId
+from models.position import Position
+from models.types_cluster import CLUSTER_TYPES
+from services.analysis.geolocation import is_in_poland
 
 
 class ReviewBase(BaseModel):
