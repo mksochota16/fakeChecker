@@ -20,6 +20,8 @@ MONGODB_URI = os.getenv("MONGODB_URI")
 MONGODB_PORT = int(os.getenv("MONGODB_PORT"))
 MONGODB_OLD_DB_NAME= os.getenv("MONGODB_OLD_DB_NAME")
 MONGODB_NEW_DB_NAME= os.getenv("MONGODB_NEW_DB_NAME")
+MONGODB_GMR_PL_FULL= os.getenv("MONGODB_GMR_PL_FULL")
+MONGODB_GMR_PL_FULL_ANONYMOUS= os.getenv("MONGODB_GMR_PL_FULL_ANONYMOUS")
 
 MONGO_CLIENT = MongoClient(MONGODB_URI, MONGODB_PORT)
 
@@ -43,5 +45,5 @@ ENGLISH_TRANSLATION_CLUSTER_DICT ={
             "INNE": "Other"
         }
 
-STH2VEC: Sth2Vec = Sth2Vec(english_translation_dict=ENGLISH_TRANSLATION_CLUSTER_DICT)
-NLP: NLPanalysis = NLPanalysis()
+STH2VEC: Sth2Vec = None#Sth2Vec(english_translation_dict=ENGLISH_TRANSLATION_CLUSTER_DICT)
+NLP: NLPanalysis = None#NLPanalysis()

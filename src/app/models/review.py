@@ -99,7 +99,8 @@ class ReviewPartialInDB(ReviewPartialBase, MongoDBModel):
     scraped_fully: Optional[bool] = False
     pass
 
-class ReviewInGMR_PLDB(MongoDBModel):
+
+class ReviewInGMR_PL(BaseModel):
     review_id: str
     rating: int
     content: str
@@ -120,6 +121,9 @@ class ReviewInGMR_PLDB(MongoDBModel):
     localization_missing: bool = False
 
     account_id: Optional[MongoObjectId]
+
+class ReviewInGMR_PLInDB(ReviewInGMR_PL, MongoDBModel):
+    pass
 
     def to_dict(self):
         localization = self.localization.dict() if self.localization else None
@@ -173,7 +177,7 @@ class ReviewInGMR_PLDB(MongoDBModel):
 
         )
 
-class ReviewInAnonymisedGMR_PLDB(MongoDBModel):
+class ReviewInAnonymisedGMR_PL(MongoDBModel):
     rating: int
     content: str
     photos_urls: Optional[List[str]]
@@ -189,8 +193,11 @@ class ReviewInAnonymisedGMR_PLDB(MongoDBModel):
     content_translated: bool = False
     not_in_poland: bool = False
     localization_missing: bool = False
+    censored_text: bool = False
 
     account_id: MongoObjectId
+class ReviewInAnonymisedGMR_PLInDB(ReviewInAnonymisedGMR_PL, MongoDBModel):
+    pass
 
     def to_dict(self):
         approximate_localization = self.approximate_localization.dict() if self.approximate_localization else None
@@ -209,6 +216,7 @@ class ReviewInAnonymisedGMR_PLDB(MongoDBModel):
             "content_not_full": self.content_not_full,
             "content_translated": self.content_translated,
             "not_in_poland": self.not_in_poland,
-            "localization_missing": self.localization_missing
+            "localization_missing": self.localization_missing,
+            "censored_text": self.censored_text
 
         }

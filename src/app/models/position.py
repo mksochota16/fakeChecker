@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from app.services.scraper.models.position import Position as OldPosition
+from services.scraper.models.position import Position as OldPosition
 
 class Position(BaseModel):
     lat: float

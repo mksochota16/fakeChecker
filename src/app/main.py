@@ -4,22 +4,17 @@ from typing import List, Tuple
 import uvicorn
 from bson import ObjectId
 from fastapi import FastAPI, HTTPException, BackgroundTasks
-from pydantic import BaseModel
 
 from config import ADMIN_API_KEY
 from dao.dao_accounts_new import DAOAccountsNew
 from dao.dao_background_tasks import DAOBackgroundTasks
-from dao.dao_places import DAOPlaces
 from dao.dao_reviews_new import DAOReviewsNew
-from dao.dao_reviews_partial import DAOReviewsPartial
-from models.account import AccountNewInDB
 from models.background_tasks import BackgroundTaskPlace, BackgroundTaskRunning, BackgroundTaskTypes, \
     BackgroundTaskAccount, BackgroundTaskRenewMarkers, BackgroundTaskGetMoreData
 from models.base_mongo_model import MongoObjectId
-from models.place import Place, PlaceInDB
 from models.response import PlaceResponse, NoReviewsFoundResponse, FailedToCollectDataResponse, AccountResponse, \
     AccountIsPrivateException, AccountIsPrivateResponse, BackgroundTaskRunningResponse
-from models.review import ReviewNewInDB, ReviewPartialInDB
+from models.review import ReviewNewInDB
 from services.predictions.prediction_tools import predict_reviews_from_place, predict_account
 from services.scraper.tools.usage import ScraperUsage
 

@@ -69,7 +69,7 @@ class AccountNewInDB(AccountNewBase, MongoDBModel):
         )
 
 
-class AccountInGMR_PLDB(MongoDBModel):
+class AccountInGMR_PL(BaseModel):
     name: str
     reviewer_id: str
     local_guide_level: Optional[int]
@@ -78,7 +78,8 @@ class AccountInGMR_PLDB(MongoDBModel):
     reviewer_url: str
     fake_service: str
     is_deleted: Optional[bool] = False
-
+class AccountInGMR_PLInDB(AccountInGMR_PL, MongoDBModel):
+    pass
     def to_dict(self):
         return {
             "_id": self.id,
@@ -105,13 +106,18 @@ class AccountInGMR_PLDB(MongoDBModel):
             is_deleted = old_model.is_deleted,
             _id = old_model.id
         )
-class AccountInAnonymisedGMR_PLDB(MongoDBModel):
+
+
+class AccountInAnonymisedGMR_PL(BaseModel):
     name_score: int
     local_guide_level: Optional[int]
     number_of_reviews: Optional[int]
     is_real: bool
     is_private: Optional[bool]
     is_deleted: Optional[bool] = False
+
+class AccountInAnonymisedGMR_PLInDB(AccountInAnonymisedGMR_PL, MongoDBModel):
+    pass
 
     def to_dict(self):
         return {
