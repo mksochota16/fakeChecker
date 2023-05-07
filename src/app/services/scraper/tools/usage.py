@@ -93,10 +93,21 @@ class ScraperUsage:
                 except:
                     content: str = ""
                 stars: int = self.info_scrape_tools.get_number_of_stars(reviewer_section)
-                reviewer_url: str = \
-                self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_url'],
-                                                              reviewer_section).attrs['href']
-                reviewer_id: str = reviewer_url.split('/')[5]
+                reviewer_url_object = self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_url'],
+                                                              reviewer_section)
+                try:
+                    reviewer_url: str = reviewer_url_object.attrs['href']
+                except KeyError:
+                    try:
+                        reviewer_url: str = reviewer_url_object.attrs['data-href']
+                    except:
+                        reviewer_url: str = "Not available"
+
+                if reviewer_url == "Not available":
+                    reviewer_id: str = "Not available"
+                else:
+                    reviewer_id: str = reviewer_url.split('/')[5]
+
                 review_id: str = \
                 self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_review_id'],
                                                               reviewer_section).attrs['data-review-id']
