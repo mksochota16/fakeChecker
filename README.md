@@ -1,5 +1,5 @@
 # **FakeChecker**
-**FakeChecker** is a part of my Engineering thesis project on Warsaw University of Technology. Its a self hosted tool (in a form of FastAPI service) for predicting wheteher reveiws on Google Maps can be trusted or are suspicous. Its pretrained models that analyse text features are tuned for Polish data, however one can train diffrent models for different languages and the tool will work with them. Pretrained models for English might come out soon.
+**FakeChecker** is a part of my Engineering thesis project on Warsaw University of Technology. Its a self hosted tool (in a form of FastAPI service) for predicting wheteher reveiws on Google Maps can be trusted or are suspicous. Its pretrained models, that analyse text features, are tuned for Polish data, however one can train diffrent models for different languages and the tool will work with them. Pretrained models for English might come out soon.
 
 ## Requirements
 - python 3.10+
