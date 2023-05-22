@@ -5,6 +5,7 @@ import matplotlib.dates as mdates
 from collections import Counter
 from typing import List, Optional
 import time
+import matplotlib as mpl
 
 import numpy as np
 import pandas
@@ -75,13 +76,13 @@ def review_new_to_review_old(review_new: ReviewNewInDB) -> ReviewOldBase:
 
 def get_vote_statistics():
     results_dict = {
-        "-7 ": 112,
-        "-6 ": 7,
-        "-5 ": 39,
-        "-4 ": 3,
-        "-3 ": 19,
-        "-2 ": 3,
-        "-1 ": 3,
+        "\u22127 ": 112,
+        "\u22126 ": 7,
+        "\u22125 ": 39,
+        "\u22124 ": 3,
+        "\u22123 ": 19,
+        "\u22122 ": 3,
+        "\u22121 ": 3,
         "0 ": 1,
         "1 ": 1,
         "2 ": 0,
@@ -92,13 +93,13 @@ def get_vote_statistics():
         "7 ": 108
     }
     fake = {
-        "-7 ": 112,
-        "-6 ": 7,
-        "-5 ": 39,
-        "-4 ": 3,
-        "-3 ": 19,
-        "-2 ": 3,
-        "-1 ": 3,
+        "\u22127 ": 112,
+        "\u22126 ": 7,
+        "\u22125 ": 39,
+        "\u22124 ": 3,
+        "\u22123 ": 19,
+        "\u22122 ": 3,
+        "\u22121 ": 3,
         "0 ": 1,
     }
     # neutral = {
@@ -619,13 +620,22 @@ def get_ratings_histograms():
     plt.xlabel('Rating in number of stars')
     plt.show()
 
-    plt.bar(*np.unique(real_ratings, return_counts=True), edgecolor='black', width=1.0)
+    fig, ax = plt.subplots()
+    ax.bar(*np.unique(real_ratings, return_counts=True), edgecolor='black', width=1.0)
     # plt.hist(real_ratings, bins=5, range=[1, 5], edgecolor='black', align='mid')
     # plt.title(f"Histogram of real reviews' ratings")
+    ax.yaxis.set_major_formatter(mpl.ticker.FuncFormatter(stupid_formatter))
     plt.ylabel('Number of ratings')
     plt.xlabel('Rating in number of stars')
     plt.show()
     print("done")
+
+def stupid_formatter(x, pos):
+    if x >= 10000:
+        x = int(x)
+        return format(x, ',')
+    else:
+        return str(int(x))
 
 
 def check_if_accounts_really_are_private_or_deleted():
@@ -789,15 +799,21 @@ def get_histograms_of_name_scores():
 
     print(mean(fake_name_scores))
     print(mean(real_name_scores))
-    plt.hist(fake_name_scores, bins=20, edgecolor='black',
+    fig, ax = plt.subplots()
+    plt.xticks(rotation=-30)
+    ax.hist(fake_name_scores, bins=20, edgecolor='black',
              weights=np.ones(len(fake_name_scores)) / len(fake_name_scores))
+    ax.xaxis.set_major_formatter(mpl.ticker.FuncFormatter(stupid_formatter))
     # plt.title(f'Histogram of fake accounts\' name scores (zoomed)')
     plt.ylabel('Account share')
     plt.xlabel('Name score')
     plt.show()
 
-    plt.hist(real_name_scores, bins=20, edgecolor='black',
+    fig, ax = plt.subplots()
+    plt.xticks(rotation=-30)
+    ax.hist(real_name_scores, bins=20, edgecolor='black',
              weights=np.ones(len(real_name_scores)) / len(real_name_scores))
+    ax.xaxis.set_major_formatter(mpl.ticker.FuncFormatter(stupid_formatter))
     # plt.title(f'Histogram of real accounts\' name scores (zoomed)')
     plt.ylabel('Account share')
     plt.xlabel('Name score')
@@ -1055,7 +1071,7 @@ def check_reviews_for_anonymity():
         full_review: ReviewInGMR_PLInDB = dao_reviews_gmr_pl.find_by_id(ano_review.id)
         counter += 1
         print(counter)
-        if counter =< 17979:
+        if counter <= 17979:
             continue
 
         new_content = ano_review.content
@@ -1138,4 +1154,4 @@ def censor_text(search_text, text_to_censor) -> Optional[str]:
 
 
 if __name__ == '__main__':
-    check_reviews_for_anonymity()
+    get_histograms_of_name_scores()
