@@ -1,3 +1,4 @@
+import pickle
 import traceback
 from typing import List, Tuple
 
@@ -6,7 +7,7 @@ from bson import ObjectId
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 
-from config import ADMIN_API_KEY
+from config import ADMIN_API_KEY, NLP
 from dao.dao_accounts_new import DAOAccountsNew
 from dao.dao_background_tasks import DAOBackgroundTasks
 from dao.dao_places import DAOPlaces
@@ -247,6 +248,28 @@ def check_results(results_id: str):
         return result
     else:
         raise HTTPException(status_code=404, detail="Task not found")
+
+class TripadvisorDummyModel(BaseModel):
+    tripadvisor_review_data: List
+
+@app.post("/analyze-tripadvisor-review/")
+def analyze_tripadvisor_review(review_data: TripadvisorDummyModel, assume_is_local_guide: bool = False):
+    tripadvisor_review_data = review_data.tripadvisor_review_data
+    model = pickle.load(open("pickled_prediction_models/reviews/RANDOM_FOREST_BEST_SENT_CAPS_INTER", 'rb'))
+    review_content = tripadvisor_review_data[3]
+    prediction_list = [int(tripadvisor_review_data[0]),
+                       assume_is_local_guide,
+                       NLP.analyze_name_of_account(tripadvisor_review_data[1]),
+                       tripadvisor_review_data[2],
+                       6,
+                       len(review_content),
+                       0,
+                       NLP.sentiment_analyzer.analyze(review_content),
+                       NLP.get_capslock_score(review_content),
+                       NLP.get_capslock_score(review_content)]
+    prediction = model.predict([prediction_list])
+    return {'is_fake': bool(prediction[0])}
+
 
 
 if __name__ == "__main__":
