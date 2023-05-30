@@ -29,9 +29,7 @@ app = FastAPI()
          response_model=BackgroundTaskRunningResponse)
 def place_scraper(url: str, background_tasks: BackgroundTasks,
                           max_scroll_time: int = 10):
-    if not url.startswith("https://www.google.com/maps/place/"):
-        raise HTTPException(status_code=400, detail="Invalid url")
-
+    _validate_place_url(url)
     dao_background_tasks = DAOBackgroundTasks()
     mongo_object_id = MongoObjectId()
     background_running = BackgroundTaskRunning(
@@ -97,8 +95,7 @@ def _place_scraper(url: str, mongo_object_id: MongoObjectId, max_scroll_time: in
 @app.get("/check-account/",
          response_model=BackgroundTaskRunningResponse)
 def account_scraper(url: str, background_tasks: BackgroundTasks, max_scroll_time: int = 10):
-    if not url.startswith("https://www.google.com/maps/contrib/"):
-        raise HTTPException(status_code=400, detail="Invalid url")
+    _validate_account_url(url)
 
     dao_background_tasks = DAOBackgroundTasks()
     mongo_object_id = MongoObjectId()
@@ -247,6 +244,14 @@ def check_results(results_id: str):
         return result
     else:
         raise HTTPException(status_code=404, detail="Task not found")
+
+def _validate_place_url(url: str):
+    if not url.startswith("https://www.google.com/maps/place/") and not url.startswith("https://www.google.pl/maps/place/"):
+        raise HTTPException(status_code=400, detail="URL is invalid")
+
+def _validate_account_url(url: str):
+    if not url.startswith("https://www.google.com/maps/contrib/") and not url.startswith("https://www.google.pl/maps/contrib/"):
+        raise HTTPException(status_code=400, detail="URL is invalid")
 
 
 if __name__ == "__main__":
