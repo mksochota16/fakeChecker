@@ -5,6 +5,7 @@ import uvicorn
 from bson import ObjectId
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 from config import ADMIN_API_KEY
 from dao.dao_accounts_new import DAOAccountsNew
@@ -25,7 +26,15 @@ from services.scraper.tools.usage import ScraperUsage
 
 app = FastAPI()
 
-@app.get("/check-place/",
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust this to restrict origins if needed
+    allow_methods=["*"],  # Adjust this to restrict HTTP methods if needed
+    allow_headers=["*"],  # Adjust this to restrict headers if needed
+)
+
+
+@app.get("/check-place",
          response_model=BackgroundTaskRunningResponse)
 def place_scraper(url: str, background_tasks: BackgroundTasks,
                           max_scroll_time: int = 10):
@@ -92,7 +101,7 @@ def _place_scraper(url: str, mongo_object_id: MongoObjectId, max_scroll_time: in
         dao_background_tasks.replace_one(background_task_result)
         return
 
-@app.get("/check-account/",
+@app.get("/check-account",
          response_model=BackgroundTaskRunningResponse)
 def account_scraper(url: str, background_tasks: BackgroundTasks, max_scroll_time: int = 10):
     _validate_account_url(url)
@@ -146,7 +155,7 @@ def _account_scraper(url: str, mongo_object_id: MongoObjectId, max_scroll_time: 
     dao_background_tasks.replace_one(background_task_result)
     return
 
-@app.get("/renew-markers/")
+@app.get("/renew-markers")
 def renew_html_markers(admin_api_key: str, background_tasks: BackgroundTasks):
     if admin_api_key != ADMIN_API_KEY:
         raise HTTPException(status_code=401, detail="API key is invalid")
@@ -173,7 +182,7 @@ def _renew_html_markers(mongo_object_id: MongoObjectId):
     dao_background_tasks.replace_one(background_task_result)
     return
 
-@app.get("/get-more-data/")
+@app.get("/get-more-data")
 def get_more_data(admin_api_key: str, background_tasks: BackgroundTasks,  ignore_exceptions: bool = False, collection_limit: int = 5):
     if admin_api_key != ADMIN_API_KEY:
         raise HTTPException(status_code=401, detail="API key is invalid")
@@ -236,7 +245,7 @@ def _get_more_data(mongo_object_id: MongoObjectId, ignore_exceptions: bool, coll
     dao_background_tasks.replace_one(background_task_result)
     return
 
-@app.get("/check-results/")
+@app.get("/check-results")
 def check_results(results_id: str):
     dao_background_tasks = DAOBackgroundTasks()
     result: dict = dao_background_tasks.find_one_by_query_return_raw({'task_id': ObjectId(results_id)})

@@ -5,14 +5,11 @@ from pymongo import MongoClient
 from services.analysis.nlp_analysis import NLPanalysis
 from services.analysis.sth2vec import Sth2Vec
 
-import warnings
-
-warnings.filterwarnings("ignore")
-
 load_dotenv()
 POSITIONSTACK_API_KEY = os.getenv("POSITIONSTACK_GEOCODE_API_KEY")
 GEOAPIFY_API_KEY = os.getenv("GEOAPIFY_GEOCODE_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_GEOCODE_API_KEY")
+CHROMEDRIVER_PATH = os.getenv("CHROMEDRIVER_PATH") if os.getenv("CHROMEDRIVER_PATH") else None
 
 ADMIN_API_KEY = os.getenv("ADMIN_API_KEY")
 

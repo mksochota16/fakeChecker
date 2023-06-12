@@ -5,6 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime, date
+import config as CONFIG
 
 from config import STH2VEC
 from dao.dao_accounts_new import DAOAccountsNew
@@ -32,7 +33,10 @@ class ScraperUsage:
     def __init__(self, headless=True):
         options = Options()
         options.headless = headless
-        self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+        if CONFIG.CHROMEDRIVER_PATH:
+            self.driver = webdriver.Chrome(CONFIG.CHROMEDRIVER_PATH, options=options)
+        else:
+            self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
         self.html_markers_dict = io_files_handler.get_saved_html_markers()
         self.simple_scrape_tools = SimpleScrapeTools(self.driver, self.html_markers_dict)
         self.info_scrape_tools = InfoScrapeTools(self.driver, self.simple_scrape_tools, self.html_markers_dict)
