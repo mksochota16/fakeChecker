@@ -31,11 +31,8 @@ async function sendURL() {
     const data = await res.json();
     console.log(data);
     const resultDiv = document.getElementById('result');
-    resultDiv.innerHTML = 'Waiting for results...<br>Estimated wait time: ' + 30 + ' seconds';
-    for( let i = 0; i < 30; i++) {
-        resultDiv.innerHTML = 'Waiting for results...<br>Estimated wait time: ' + 30-i + ' seconds';
-        await sleep(1000);
-    }
+    resultDiv.innerHTML = 'Waiting for results...<br>Estimated wait time: ' + data.estimated_wait_time + ' seconds';
+    await sleep(data.estimated_wait_time * 1000);
 
     const resultsId = data.task_id;
     let isRunning = true;
