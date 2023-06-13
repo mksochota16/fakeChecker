@@ -31,7 +31,7 @@ async function sendURL() {
     const data = await res.json();
     console.log(data);
     const resultDiv = document.getElementById('result');
-    resultDiv.textContent = 'Waiting for results...\nEstimated wait time: ' + data.estimated_wait_time + ' seconds';
+    resultDiv.innerHTML = 'Waiting for results...<br>Estimated wait time: ' + data.estimated_wait_time + ' seconds';
     await sleep(data.estimated_wait_time * 1000);
 
     const resultsId = data.task_id;
@@ -50,8 +50,8 @@ async function sendURL() {
           isRunning = false;
           // Do something with the final results
           console.log('Final results:', resultsData);
-          resultDiv.textContent = 'Fake percentage: ' + Math.round(resultsData.fake_checker_response.fake_percentage) +
-              '% \nAnything above 30% should be worrying';
+          resultDiv.innerHTML = 'Checked '+ resultsData.fake_checker_response.number_of_reviews_scanned + ' reviews' +
+              '<br>Fake percentage: ' + Math.round(resultsData.fake_checker_response.fake_percentage) + '%';
         }
     }
 
