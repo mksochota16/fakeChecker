@@ -1,0 +1,9 @@
+{
+  "manifest_version": 2,
+  "name": "FakeChecker",
+  "version": "1.0",
+  "permissions": ["activeTab"],
+  "browser_action": {
+    "default_popup": "popup.html"
+  }
+}
