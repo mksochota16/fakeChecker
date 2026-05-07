@@ -1,35 +1,39 @@
 reviewer_reviews_content; MyEned
 reviewer_review_id_child; jJc9Ad
 reviewer_review_relative_date; rsqaWe
-reviewer_name; geAzIe F8kQwb
-reviewer_guide_level; FNyx3 F8kQwb
+reviewer_reviews_response_content; ['jJc9Ad', 'CDe7pd', 'wiI7pd']
+reviewer_name; geAzIe fontHeadlineLarge
+reviewer_guide_level; FNyx3 z7X4M fontBodySmall
 reviewer_number_of_reviews; Qha3nb
 reviewer_review_location; GHT2ce NsCY4
-reviewer_review_label; d4r55 YJxk2d
+reviewer_review_label; d4r55 fontTitleSmall
+reviewer_review_area_label; jftiEf fontBodyMedium t2Acle FwTFEc azD0p
+reviewer_review_address; RfnDt xJVozb
 trans_more_info_button; lzIite PpaGLb
-place_name; DUwDvf fontHeadlineLarge
-place_number_of_reviews; fontBodyMedium dmRWX
-place_rating; F7nice mmu3tf
-place_description; ['skqShb', 'fontBodyMedium', 'fontBodyMedium']
-place_address; CsEnBe
+place_name; DUwDvf lfPIob
+place_description; DkEaL
+place_number_of_reviews; ['fontBodyMedium dmRWX', 'F7nice']
+place_rating; ['fontBodyMedium dmRWX', 'F7nice']
+place_address; Io6YTe fontBodyMedium kR99db fdkmkc
 place_reviewer_content; ['MyEned', 'wiI7pd']
 place_reviewer_contents; MyEned
 place_reviewer_date; DU9Pgb
-all_reviewer_stars; kvMYJc
 place_reviewer_response_content; ['jJc9Ad', 'GHT2ce', 'CDe7pd', 'wiI7pd']
-place_reviewer_review_id; GBkF3d
-place_reviewer_name; d4r55
-place_reviewer_local_guide_and_reviews; RfnDt
+place_reviewer_review_id; gllhef
+place_reviewer_name; d4r55 fontTitleMedium
+place_reviewer_local_guide_and_reviews; ['al6Kxe', 'RfnDt']
 place_single_reviewer_section; jftiEf fontBodyMedium
-place_reviewer_url; WEBjve
-place_reviewer_png; NBa7we
+scrollable_div; m6QErb DxyBCb kA9KIf dS8AEf XiKgde
+place_reviewer_reviewer_id; al6Kxe
+place_reviewer_img; ['jJc9Ad', 'NBa7we']
+place_reviewer_url; al6Kxe
+place_reviewer_png; ['jJc9Ad', 'NBa7we']
+all_reviewer_stars; kvMYJc
+place_reviews_number_of_reviews; ['jANrlb', 'fontBodySmall']
 reviewer_private_label; vtSn7b gycdOb
 reviewer_review_photo; Tya61d
 reviewer_review_photo_section; KtCyie
-search_result_marker_0; Nv2PK tH5CWc THOPZb
-search_result_marker_1; Nv2PK THOPZb CpccDe
+search_result_marker_0; m6QErb DxyBCb kA9KIf dS8AEf XiKgde ecceSd
+search_result_marker_1; bJzME DsGVEb tTVLSc
 place_reviewer_photo; Tya61d
 place_reviewer_photo_section; KtCyie
-scrollable_div; m6QErb DxyBCb kA9KIf dS8AEf
-hotel_rating_label; fzvQIb
-hotel_review_relative_date; xRkPPb

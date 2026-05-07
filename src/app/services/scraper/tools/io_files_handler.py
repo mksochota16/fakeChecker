@@ -66,16 +66,16 @@ def update_clusters(new_type, cluster):
 
 
 def import_dataframes_from_names_files():
-    male_names = pd.read_csv('data/polish-male-names.csv').drop('PŁEĆ', 1)
-    female_names = pd.read_csv('data/polish-female-names.csv').drop('PŁEĆ', 1)
+    male_names = pd.read_csv('data/polish-male-names.csv').drop('PŁEĆ', axis=1)
+    female_names = pd.read_csv('data/polish-female-names.csv').drop('PŁEĆ', axis=1)
     names = pd.concat([male_names, female_names])
     names['sum'] = names.groupby("IMIĘ_PIERWSZE")['LICZBA_WYSTĄPIEŃ'].transform('sum')
-    names = names.drop('LICZBA_WYSTĄPIEŃ', 1)
+    names = names.drop('LICZBA_WYSTĄPIEŃ', axis=1)
 
     male_surnames = pd.read_csv('data/polish-male-surnames.csv')
     female_surnames = pd.read_csv('data/polish-female-surnames.csv')
     surnames = pd.concat([male_surnames, female_surnames])
     surnames['sum'] = surnames.groupby("Nazwisko aktualne")['Liczba'].transform('sum')
-    surnames = surnames.drop('Liczba', 1)
+    surnames = surnames.drop('Liczba', axis=1)
 
     return names, surnames

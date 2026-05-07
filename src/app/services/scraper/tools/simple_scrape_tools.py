@@ -82,7 +82,7 @@ class SimpleScrapeTools:
         wait.until(EC.presence_of_element_located((by_what, search_text)))
 
     def scroll_down(self, how_much_wait_at_page_end=-1, is_search_result=False, max_seconds=-1, number_of_scrolls=-1):
-        scrollbox_selector = f"//div[contains(@class,'{self.html_markers_dict['scrollable_div']}')]" # "//div[contains(@class,'m6QErb DxyBCb kA9KIf dS8AEf')]"
+        scrollbox_selector = f"//div[contains(@class, '{self.html_markers_dict['scrollable_div']}')]" # "//div[contains(@class,'m6QErb DxyBCb kA9KIf dS8AEf')]"
         index = 0
         if is_search_result:
             index = 1
@@ -151,3 +151,6 @@ class SimpleScrapeTools:
         self.driver.switch_to_window(child_tab)
 
         return p
+
+def magic_scroll_formula(number_of_reviews: int) -> int:
+    return int(number_of_reviews / 8) + 2

@@ -1,3 +1,4 @@
+import traceback
 from enum import Enum
 from typing import Optional
 
@@ -27,8 +28,8 @@ def forward_geocode(address: str, limit: int = 1, new_model = False, which_api: 
         try:
             return _forward_geocode_per_api(address, limit, new_model, api)
         except Exception as e:
-            print(e)
             continue
+    return None
 
 
 def _forward_geocode_per_api(address: str, limit: int = 1, new_model=False,

@@ -1,4 +1,4 @@
-from typing import Type, List
+from typing import Type, List, Optional
 
 from pydantic import BaseModel
 from pymongo.database import Database as MongoDB
@@ -28,15 +28,19 @@ class DAOBase:
         result: MongoCursor = self.collection.find({})
         return [self.model_in_db(**doc) for doc in list(result)]
 
-    def find_by_id(self, id: ObjectId) -> BaseModel:
+    def find_by_id(self, id: ObjectId) -> Optional[BaseModel]:
         result: dict = self.collection.find_one({"_id": id})
+        if result is None:
+            return None
         return self.model_in_db(**result)
 
-    def find_one_by_query(self, query: dict) -> BaseModel:
+    def find_one_by_query(self, query: dict) -> Optional[BaseModel]:
         result: dict = self.collection.find_one(query)
+        if result is None:
+            return None
         return self.model_in_db(**result)
 
-    def find_one_by_query_return_raw(self, query: dict) -> dict:
+    def find_one_by_query_return_raw(self, query: dict) -> Optional[dict]:
         result: dict = self.collection.find_one(query)
         return result
 

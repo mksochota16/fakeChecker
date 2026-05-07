@@ -41,8 +41,10 @@ def delete_unsupported_characters(type_of_object):
 
 
 def convert_from_relative_to_absolute_date(relative_date) -> datetime:
-    relative_date = relative_date.replace("\xa0", " ")
+    relative_date = relative_date.replace("\xa0", " ").replace("\ue838", "")
     data = relative_date.split(' ')
+    if data[0] == "Edytowano":
+        data = data[1:]
     # unit is amount of days
     if len(data) == 1:
         value = 1
@@ -70,6 +72,14 @@ def convert_from_relative_to_absolute_date(relative_date) -> datetime:
     return current_date - time_delta
 
 
+def find_recursive(response, marker_list: list[str]):
+    response_to_search = response
+    for marker in marker_list:
+        response_to_search = response_to_search.find_all(class_=re.compile(marker))[0]
+
+    return response_to_search
+
+
 class InfoScrapeTools:
     def __init__(self, driver, simpleScrapeTools, html_markers_dict):
         self.driver = driver
@@ -94,10 +104,11 @@ class InfoScrapeTools:
             response = BeautifulSoup(self.driver.page_source, 'html.parser')
         try:  # if on place page
             try:
-                marker = self.html_markers_dict['place_rating'].split()[0]
-                review_element = response.find(class_=marker).contents[1].text[1:-1]
+                marker = self.html_markers_dict['place_rating']
+                rating_element = find_recursive(response, marker)
+                place_number_of_reviews = rating_element.text.split("(")[1][:-1]
                 number_of_reviews = 0
-                for split in review_element.split():
+                for split in place_number_of_reviews.split():
                     if split.isnumeric():
                         number_of_reviews = number_of_reviews * 1000 + int(split)
                 return int(number_of_reviews)
@@ -117,14 +128,13 @@ class InfoScrapeTools:
                 number_of_reviews = 1
             return number_of_reviews
 
-
     def get_place_rating(self, response=None) -> float:
         if response is None:
             response = BeautifulSoup(self.driver.page_source, 'html.parser')
         try:
             try:
-                marker = self.html_markers_dict['place_rating'].split()[0]
-                review_element = response.find(class_=marker).contents[0].text.replace(',', '.')
+                rating_element = self.find_using_html_marker(self.html_markers_dict['place_rating'], response).contents[0]
+                review_element = rating_element.text.replace(',', '.')
                 return float(review_element)
             except:
                 return float(
@@ -135,11 +145,8 @@ class InfoScrapeTools:
     def get_number_of_stars(self, reviewer_section) -> int:
         try:
             stars_object = self.find_using_html_marker(self.html_markers_dict['all_reviewer_stars'], reviewer_section)
-            num_stars = 0
-            for star in stars_object.contents:
-                if len(star.attrs['class']) == 2:
-                    num_stars += 1
-            return num_stars
+            star_text = str(stars_object.attrs['aria-label']).split(" ")[0]
+            return int(star_text)
         except AttributeError:
             stars: int = int(self.find_using_html_marker(
                 self.html_markers_dict['hotel_rating_label'], reviewer_section).text.split("/")[0])
@@ -192,12 +199,14 @@ class InfoScrapeTools:
                                                               "//button[contains(@class,'section-place-name-header-place-details blue-button-text')]")  # constant and hard to
 
     def click_on_more_reviews(self):
-        try:
-            self.simpleScrapeTools.wait_for_element_and_click(By.XPATH,
-                                                              "//button[contains(@jsaction,'pane.rating.moreReviews')]")
-        except TimeoutException:
-            self.simpleScrapeTools.wait_for_element_and_click(By.XPATH,
-                                                              "//span[contains(@aria-label,'opin')]")
+        self.simpleScrapeTools.wait_for_element_and_click(By.XPATH,
+                                                               "//button[contains(@aria-label,'Opinie')]")
+        # try:
+        #     self.simpleScrapeTools.wait_for_element_and_click(By.XPATH,
+        #                                                       "//button[contains(@jsaction,'pane.rating.moreReviews')]")
+        # except TimeoutException:
+        #     self.simpleScrapeTools.wait_for_element_and_click(By.XPATH,
+        #                                                       "//span[contains(@aria-label,'Opinie')]")
     def navigate_to_place_site(self, met_people, place_iterator):
         if self.simpleScrapeTools.wait_for_element_and_click(By.XPATH,
                                                              f"//div[contains(@class,'{self.html_markers_dict['reviewer_review_label']}')]",
@@ -337,13 +346,14 @@ class InfoScrapeTools:
 
     def get_place_type(self, place_response) -> str:
         try:
-            return place_response.find(jsaction="pane.rating.category").text.strip()
+            place_type_element = self.find_using_html_marker(self.html_markers_dict['place_description'], place_response)
+            return place_type_element.text.strip()
         except:
             return "Hotel"
 
     def find_from_complicated_html_marker(self, html_marker, context, level_of_recursion = 0):
         if isinstance(html_marker, list):
-            if level_of_recursion + 1 == len(html_marker):
+            if level_of_recursion == len(html_marker):
                 return context
             current_marker = html_marker[level_of_recursion]
             search1 = context.find(class_=re.compile(current_marker))

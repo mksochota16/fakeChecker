@@ -3,6 +3,7 @@ from typing import Optional, Tuple
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime, date
 import config as CONFIG
@@ -32,11 +33,16 @@ from services.scraper.tools.info_scrape_tools import convert_from_relative_to_ab
 class ScraperUsage:
     def __init__(self, headless=True):
         options = Options()
-        options.headless = headless
+        if headless:
+            options.add_argument("--headless=new")  # important for newer Chrome versions
+
         if CONFIG.CHROMEDRIVER_PATH:
-            self.driver = webdriver.Chrome(CONFIG.CHROMEDRIVER_PATH, options=options)
+            service = Service(CONFIG.CHROMEDRIVER_PATH)
         else:
-            self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+            service = Service(ChromeDriverManager().install())
+
+        self.driver = webdriver.Chrome(service=service, options=options)
+
         self.html_markers_dict = io_files_handler.get_saved_html_markers()
         self.simple_scrape_tools = SimpleScrapeTools(self.driver, self.html_markers_dict)
         self.info_scrape_tools = InfoScrapeTools(self.driver, self.simple_scrape_tools, self.html_markers_dict)
@@ -47,6 +53,8 @@ class ScraperUsage:
 
     def collect_data_from_place(self, url, max_scroll_seconds: int = 5, new_scrape = False) -> Tuple[MongoObjectId,int]:
         self.simple_scrape_tools.start_scraping(url)
+        self.info_scrape_tools.wait_for_place_site_to_load()
+        self.simple_scrape_tools.driver.refresh()
         self.info_scrape_tools.wait_for_place_site_to_load()
 
         response = BeautifulSoup(self.driver.page_source, 'html.parser')
@@ -60,6 +68,10 @@ class ScraperUsage:
         place_cluster: CLUSTER_TYPES = STH2VEC.classify_type_of_object(type_of_object)
 
         dao_places: DAOPlaces = DAOPlaces()
+        place_in_db = dao_places.find_one_by_query({"place_name": place_name, "place_address": place_address, "type_of_object": type_of_object})
+        if place_in_db is not None:
+            return place_in_db.id, 0
+
         place: Place = Place(
             name=place_name,
             url=place_url,
@@ -74,13 +86,8 @@ class ScraperUsage:
 
         place_id: MongoObjectId = dao_places.insert_one(place)
 
-        try:
-            #FIXME - this is a temporary solution, should be added to html markers collector
-            self.simple_scrape_tools.wait_for_element_and_click(By.XPATH,
-                                                            "//button[contains(@class,'hh2c6')]", 1)
-        except:
-            self.simple_scrape_tools.wait_for_element_and_click(By.XPATH,
-                                                            "//div[contains(@jsaction,'pane.rating.moreReviews')]")  # constant value for now
+        self.info_scrape_tools.click_on_more_reviews()
+        time.sleep(2)
         self.simple_scrape_tools.scroll_down(max_seconds=max_scroll_seconds)
 
         response = BeautifulSoup(self.driver.page_source, 'html.parser')
@@ -121,6 +128,7 @@ class ScraperUsage:
                 date_absolute: datetime = convert_from_relative_to_absolute_date(date_relative)
                 if date_absolute is None:
                     # the retrieved date was not correct
+                    print(f"date relative was {date_relative}, reviewer_id: {reviewer_id}")
                     date_relative: str = self.info_scrape_tools.find_using_html_marker(
                         self.html_markers_dict['hotel_review_relative_date'],
                         reviewer_section).text.replace("Nowa", "").replace("w:","").replace("Google","").strip()
@@ -149,7 +157,7 @@ class ScraperUsage:
                         photos = self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_photo'],
                                                                                photo_section, multiple=True)
                         for photo in photos:
-                            photos_urls.append(photo.attrs['style'].split("\'")[1])
+                            photos_urls.append(photo.attrs['style'].split("(\"")[1].split("\")")[0])
                 except:
                     pass
 
@@ -176,7 +184,7 @@ class ScraperUsage:
                     place_id=place_id
                 )
                 dao_reviews.insert_one(review)
-            except AttributeError:
+            except:
                 # sometimes the last reviews do not load in as the whole and only some attributes are present, so we skip them
                 misread_reviews += 1
 
@@ -210,11 +218,11 @@ class ScraperUsage:
             return account_id, 0
         try:
             local_guide_info = response.find(class_=re.compile(self.html_markers_dict['reviewer_guide_level'])).text.split()
-            if len(local_guide_info) > 3:  # then he is a local guide
-                local_guide_level = int(local_guide_info[4])
+            if len(local_guide_info) > 3 and local_guide_info[3] != "rzeczy":  # then he is a local guide
+                local_guide_level = int(local_guide_info[3]) #used to be [4]
             else:  # he is not a local guide
                 local_guide_level = 0
-        except AttributeError:
+        except:
             # he is not a local guide
             local_guide_level = 0
 
@@ -244,9 +252,9 @@ class ScraperUsage:
             new_scrape=new_scrape
         )
         account_id: MongoObjectId = dao_accounts_new.insert_one(account_to_create)
-        self.simple_scrape_tools.scroll_down(max_seconds=max_scroll_seconds)
+        self.simple_scrape_tools.scroll_down(number_of_scrolls=magic_scroll_formula(number_of_reviews), max_seconds=max_scroll_seconds)
         response = BeautifulSoup(self.driver.page_source, 'html.parser')
-        reviews_sections = response.find_all(class_=re.compile(self.html_markers_dict['place_single_reviewer_section']))
+        reviews_sections = response.find_all(class_=re.compile(self.html_markers_dict['reviewer_review_area_label']))
         misread_reviews = 0
         for reviewer_section in reviews_sections:
             try:
@@ -255,7 +263,7 @@ class ScraperUsage:
                 place_name: str = self.info_scrape_tools.find_using_html_marker(
                     self.html_markers_dict['reviewer_review_label'], reviewer_section).text.strip()
                 place_address: str = self.info_scrape_tools.find_using_html_marker(
-                    self.html_markers_dict['place_reviewer_local_guide_and_reviews'], reviewer_section).text.strip()[:-2]
+                    self.html_markers_dict['reviewer_review_address'], reviewer_section).text.strip()
                 place_localization: Optional[PositionNew] = geocode_api.forward_geocode(place_address, new_model=True)
 
                 rating: int = self.info_scrape_tools.get_number_of_stars(reviewer_section)
@@ -285,7 +293,7 @@ class ScraperUsage:
                         photos = self.info_scrape_tools.find_using_html_marker(self.html_markers_dict['place_reviewer_photo'],
                                                                                photo_section, multiple=True)
                         for photo in photos:
-                            photos_urls.append(photo.attrs['style'].split("\'")[1])
+                            photos_urls.append(photo.attrs['style'].split("url(\"")[1].split("\");")[0])
                 except:
                     pass
 
@@ -389,8 +397,8 @@ class ScraperUsage:
             return 'private'
         return 'public'
 
-    def discover_new_markers(self):
-        self.html_markers.discoverNewMarkers()
+    def discover_new_markers(self, first_pass = False):
+        self.html_markers.discoverNewMarkers(first_pass=first_pass)
         self.html_markers_dict = io_files_handler.get_saved_html_markers()
         self.info_scrape_tools = InfoScrapeTools(self.driver, self.simple_scrape_tools, self.html_markers_dict)
         self.html_markers = HTMLMarkers(self.driver, self.simple_scrape_tools, self.info_scrape_tools,
